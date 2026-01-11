@@ -15,8 +15,8 @@ interface BlogCardProps {
 export function BlogCard({ slug, title, excerpt, date, author, readTime, category }: BlogCardProps) {
   return (
     <Link href={`/blog/${slug}`}>
-      <div className="p-[1px] bg-gradient-to-r from-purple-900/30 to-transparent rounded-sm cursor-pointer hover:from-purple-700/70 transition-all duration-500 mb-6">
-        <article className="bg-black rounded-sm transition-colors duration-500">
+      <div className="p-[1px] bg-gradient-to-r from-purple-900/30 to-transparent rounded-sm cursor-pointer hover:from-purple-700/70 transition-all duration-500 ease-in-out mb-6">
+        <article className="bg-black rounded-sm transition-colors duration-500 ease-in-out">
           <div className="p-4">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs text-purple-400 uppercase tracking-wider">{category}</span>

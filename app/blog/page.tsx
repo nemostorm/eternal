@@ -76,21 +76,29 @@ export default function Blog() {
           </div>
 
           {/* Scrollable Blog Feed */}
-          <div className="max-h-96 overflow-y-auto scrollbar-thin scrollbar-thumb-purple-600/30">
-            <div className="space-y-6 pr-4">
-              {filteredPosts.map((post, index) => (
-                <BlogCard
-                  key={index}
-                  slug={post.slug}
-                  title={post.title}
-                  excerpt={post.excerpt}
-                  date={post.date}
-                  author={post.author}
-                  readTime={post.readTime}
-                  category={post.category}
-                />
-              ))}
+          <div className="relative">
+            {/* Fade gradient overlay at top */}
+            <div className="absolute top-0 left-0 right-0 h-16 bg-gradient-to-b from-black to-transparent pointer-events-none z-10"></div>
+            
+            <div className="max-h-96 overflow-y-auto scrollbar-thin scrollbar-thumb-purple-600/30">
+              <div className="space-y-6 pr-4">
+                {filteredPosts.map((post, index) => (
+                  <BlogCard
+                    key={index}
+                    slug={post.slug}
+                    title={post.title}
+                    excerpt={post.excerpt}
+                    date={post.date}
+                    author={post.author}
+                    readTime={post.readTime}
+                    category={post.category}
+                  />
+                ))}
+              </div>
             </div>
+
+            {/* Fade gradient overlay at bottom */}
+            <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-black to-transparent pointer-events-none z-10"></div>
           </div>
         </div>
       </main>
