@@ -6,6 +6,7 @@ import hljs from 'highlight.js';
 import 'highlight.js/styles/github-dark.css';
 import { Navbar } from "../../components/Navbar";
 import { Footer } from "../../components/Footer";
+import { InteractiveCodeEditor } from "../../components/InteractiveCodeEditor";
 import Link from 'next/link';
 import { blogPosts, BlogPost } from '@/lib/posts';
 
@@ -15,48 +16,184 @@ export default function BlogPostPage() {
   
   const post = blogPosts.find(p => p.slug === slug);
 
-  const htmlContent = useMemo(() => {
-    if (!post) return '';
-    
-    // Helper function to convert inline markdown bold and italic to HTML
-    const convertMarkdown = (text: string) => {
-      // Handle bold first (** or __) 
-      let result = text.replace(/\*\*(.+?)\*\*/g, '<strong class="text-white">$1</strong>');
-      // Handle italic (* or _) - must come after bold to avoid breaking bold syntax
-      result = result.replace(/\*(.+?)\*/g, '<em class="text-gray-300">$1</em>');
-      return result;
-    };
-    
-    const lines = post.content.split('\n');
-    let inTable = false;
-    let isFirstRow = true;
-    let inCodeBlock = false;
-    
-    return lines.map((line, index) => {
-      // Handle code blocks first - they take priority over everything else
-      if (line.startsWith('```')) {
-        inCodeBlock = !inCodeBlock;
-        if (inCodeBlock) {
-          const language = line.substring(3).trim() || 'plaintext';
-          return `<pre class="my-4 rounded overflow-x-auto"><code class="language-${language}">`;
+  const renderContent = useMemo(() => {
+    if (!post) return [];
+
+    const contentParts = post.content.split('[INTERACTIVE_CODE_EDITOR]');
+    const elements: JSX.Element[] = [];
+
+    contentParts.forEach((part, index) => {
+      // Add the text content (converted to HTML)
+      if (part.trim()) {
+        elements.push(
+          <div
+            key={`text-${index}`}
+            className="prose prose-invert max-w-none"
+            dangerouslySetInnerHTML={{ __html: convertMarkdownToHtml(part) }}
+          />
+        );
+      }
+
+      // Add the interactive code editor between text parts
+      if (index < contentParts.length - 1) {
+        elements.push(
+          <InteractiveCodeEditor
+            key={`editor-${index}`}
+            tabs={[
+              {
+                id: 'bad-approach',
+                title: '❌ Bad Approach',
+                code: `public class PaymentProcessor
+{
+    public void ProcessPayment(decimal amount, string method)
+    {
+        if (method == "credit-card")
+        {
+            // Credit card logic
+            Console.WriteLine("Processing credit card payment...");
         }
-        return '</code></pre>';
+        else if (method == "paypal")
+        {
+            // PayPal logic
+            Console.WriteLine("Processing PayPal payment...");
+        }
+        else if (method == "crypto")
+        {
+            // Cryptocurrency logic
+            Console.WriteLine("Processing crypto payment...");
+        }
+        else if (method == "bank-transfer")
+        {
+            // Bank transfer logic
+            Console.WriteLine("Processing bank transfer...");
+        }
+    }
+}`
+              },
+              {
+                id: 'strategy-interface',
+                title: '🔧 Strategy Interface',
+                code: `// Strategy Interface
+public interface IPaymentStrategy
+{
+    void Pay(decimal amount);
+}`
+              },
+              {
+                id: 'concrete-strategies',
+                title: '💳 Concrete Strategies',
+                code: `// Concrete Strategies
+public class CreditCardPayment : IPaymentStrategy
+{
+    private readonly string _cardNumber;
+    private readonly string _cvv;
+    private readonly string _expiryDate;
+
+    public CreditCardPayment(string cardNumber, string cvv, string expiryDate)
+    {
+        _cardNumber = cardNumber;
+        _cvv = cvv;
+        _expiryDate = expiryDate;
+    }
+
+    public void Pay(decimal amount)
+    {
+        Console.WriteLine($"Processing credit card payment of {amount}");
+        Console.WriteLine($"Card: ****{_cardNumber.Substring(_cardNumber.Length - 4)}");
+        // Actual credit card processing logic
+    }
+}
+
+public class PayPalPayment : IPaymentStrategy
+{
+    private readonly string _email;
+
+    public PayPalPayment(string email)
+    {
+        _email = email;
+    }
+
+    public void Pay(decimal amount)
+    {
+        Console.WriteLine($"Processing PayPal payment of {amount}");
+        Console.WriteLine($"Account: {_email}");
+        // Actual PayPal processing logic
+    }
+}`
+              },
+              {
+                id: 'context-class',
+                title: '🎯 Context Class',
+                code: `// Context
+public class PaymentProcessor
+{
+    private IPaymentStrategy _strategy;
+
+    public PaymentProcessor(IPaymentStrategy strategy)
+    {
+        _strategy = strategy;
+    }
+
+    public void SetStrategy(IPaymentStrategy strategy)
+    {
+        _strategy = strategy;
+    }
+
+    public void ProcessPayment(decimal amount)
+    {
+        _strategy.Pay(amount);
+    }
+}`
+              },
+              {
+                id: 'usage-example',
+                title: '🚀 Usage Example',
+                code: `// Client code
+var processor = new PaymentProcessor(
+    new CreditCardPayment("1234567890123456", "123", "12/28")
+);
+
+processor.ProcessPayment(100);
+// Output: Processing credit card payment of $100
+//         Card: ****3456
+
+// Switch strategy at runtime
+processor.SetStrategy(new PayPalPayment("user@example.com"));
+processor.ProcessPayment(50);
+// Output: Processing PayPal payment of $50
+//         Account: user@example.com`
+              }
+            ]}
+            defaultTab="bad-approach"
+          />
+        );
       }
-      
-      // If we're inside a code block, return the line as-is (escaped)
-      if (inCodeBlock) {
-        return line
-          .replace(/&/g, '&amp;')
-          .replace(/</g, '&lt;')
-          .replace(/>/g, '&gt;') + '\n';
-      }
-      
-      // Handle tables
-      if (line.trim().startsWith('|')) {
-        const cells = line.split('|').filter(cell => cell.trim() !== '');
-        
-        // Skip separator rows (|---|---|)
-        if (line.includes('---')) {
+    });
+
+    return elements;
+  }, [post]);
+
+  // Helper function to convert markdown to HTML
+  const convertMarkdownToHtml = (text: string): string => {
+    // Handle headers
+    let result = text.replace(/^### (.*$)/gm, '<h3 class="text-xl font-semibold text-white mt-8 mb-4">$1</h3>');
+    result = result.replace(/^## (.*$)/gm, '<h2 class="text-2xl font-semibold text-white mt-8 mb-4">$1</h2>');
+    result = result.replace(/^# (.*$)/gm, '<h1 class="text-3xl font-bold text-white mt-8 mb-4">$1</h1>');
+
+    // Handle bold and italic
+    result = result.replace(/\*\*(.+?)\*\*/g, '<strong class="text-white">$1</strong>');
+    result = result.replace(/\*(.+?)\*/g, '<em class="text-gray-300">$1</em>');
+
+    // Handle lists
+    result = result.replace(/^- (.*$)/gm, '<li class="text-gray-300 ml-4">$1</li>');
+    result = result.replace(/(<li.*<\/li>\n?)+/g, '<ul class="list-disc list-inside mb-4">$&</ul>');
+
+    // Handle paragraphs
+    result = result.replace(/\n\n/g, '</p><p class="text-gray-300 leading-relaxed mb-4">');
+    result = '<p class="text-gray-300 leading-relaxed mb-4">' + result + '</p>';
+
+    return result;
+  };
           return '';
         }
         
@@ -118,7 +255,7 @@ export default function BlogPostPage() {
 
   useEffect(() => {
     hljs.highlightAll();
-  }, [htmlContent]);
+  }, [renderContent]);
 
   if (!post) {
     return (
@@ -194,10 +331,9 @@ export default function BlogPostPage() {
 
           <div className="h-px w-full bg-gradient-to-r from-transparent via-purple-400/30 to-transparent mb-12"></div>
 
-          <div 
-            className="text-gray-300 leading-relaxed space-y-6"
-            dangerouslySetInnerHTML={{ __html: htmlContent }}
-          />
+          <article className="text-gray-300 leading-relaxed space-y-6">
+            {renderContent}
+          </article>
         </article>
       </main>
       <Footer />
