@@ -164,8 +164,6 @@ As AI models continue to grow in size and complexity, the networking infrastruct
 
 Whether you're training the next generation of large language models, building real-time recommendation systems, or developing autonomous vehicles, Spectrum-X provides the networking foundation to turn AI ambitions into reality.
 
----
-
 *Have you deployed Spectrum-X in your data center? Share your experiences and performance results in the comments below!*
   `
 };

@@ -16,9 +16,29 @@ export default function BlogPostPage() {
   
   const post = blogPosts.find(p => p.slug === slug);
 
-  const renderContent = useMemo(() => {
-    if (!post) return [];
+  // Helper function to convert markdown to HTML
+  const convertMarkdownToHtml = (text: string): string => {
+    // Handle headers
+    let result = text.replace(/^### (.*$)/gm, '<h3 class="text-xl font-semibold text-white mt-8 mb-4">$1</h3>');
+    result = result.replace(/^## (.*$)/gm, '<h2 class="text-2xl font-semibold text-white mt-8 mb-4">$1</h2>');
+    result = result.replace(/^# (.*$)/gm, '<h1 class="text-3xl font-bold text-white mt-8 mb-4">$1</h1>');
 
+    // Handle bold and italic
+    result = result.replace(/\*\*(.+?)\*\*/g, '<strong class="text-white">$1</strong>');
+    result = result.replace(/\*(.+?)\*/g, '<em class="text-gray-300">$1</em>');
+
+    // Handle lists
+    result = result.replace(/^- (.*$)/gm, '<li class="text-gray-300 ml-4">$1</li>');
+    result = result.replace(/(<li.*<\/li>\n?)+/g, '<ul class="list-disc list-inside mb-4">$&</ul>');
+
+    // Handle paragraphs
+    result = result.replace(/\n\n/g, '</p><p class="text-gray-300 leading-relaxed mb-4">');
+    result = '<p class="text-gray-300 leading-relaxed mb-4">' + result + '</p>';
+
+    return result;
+  };
+
+  const renderContent = useMemo(() => {
     const contentParts = post.content.split('[INTERACTIVE_CODE_EDITOR]');
     const elements: JSX.Element[] = [];
 
@@ -36,14 +56,14 @@ export default function BlogPostPage() {
 
       // Add the interactive code editor between text parts
       if (index < contentParts.length - 1) {
-        elements.push(
-          <InteractiveCodeEditor
-            key={`editor-${index}`}
-            tabs={[
-              {
-                id: 'bad-approach',
-                title: '❌ Bad Approach',
-                code: `public class PaymentProcessor
+        const getTabsForPost = (slug: string) => {
+          switch (slug) {
+            case 'strategy-pattern-design-pattern':
+              return [
+                {
+                  id: 'bad-approach',
+                  title: 'Bad Approach',
+                  code: `public class PaymentProcessor
 {
     public void ProcessPayment(decimal amount, string method)
     {
@@ -69,20 +89,20 @@ export default function BlogPostPage() {
         }
     }
 }`
-              },
-              {
-                id: 'strategy-interface',
-                title: '🔧 Strategy Interface',
-                code: `// Strategy Interface
+                },
+                {
+                  id: 'strategy-interface',
+                  title: 'Strategy Interface',
+                  code: `// Strategy Interface
 public interface IPaymentStrategy
 {
     void Pay(decimal amount);
 }`
-              },
-              {
-                id: 'concrete-strategies',
-                title: '💳 Concrete Strategies',
-                code: `// Concrete Strategies
+                },
+                {
+                  id: 'concrete-strategies',
+                  title: 'Concrete Strategies',
+                  code: `// Concrete Strategies
 public class CreditCardPayment : IPaymentStrategy
 {
     private readonly string _cardNumber;
@@ -120,11 +140,11 @@ public class PayPalPayment : IPaymentStrategy
         // Actual PayPal processing logic
     }
 }`
-              },
-              {
-                id: 'context-class',
-                title: '🎯 Context Class',
-                code: `// Context
+                },
+                {
+                  id: 'context-class',
+                  title: 'Context Class',
+                  code: `// Context
 public class PaymentProcessor
 {
     private IPaymentStrategy _strategy;
@@ -144,11 +164,11 @@ public class PaymentProcessor
         _strategy.Pay(amount);
     }
 }`
-              },
-              {
-                id: 'usage-example',
-                title: '🚀 Usage Example',
-                code: `// Client code
+                },
+                {
+                  id: 'usage-example',
+                  title: 'Usage Example',
+                  code: `// Client code
 var processor = new PaymentProcessor(
     new CreditCardPayment("1234567890123456", "123", "12/28")
 );
@@ -162,9 +182,575 @@ processor.SetStrategy(new PayPalPayment("user@example.com"));
 processor.ProcessPayment(50);
 // Output: Processing PayPal payment of $50
 //         Account: user@example.com`
-              }
-            ]}
-            defaultTab="bad-approach"
+                }
+              ];
+            case 'dependency-inversion-principle':
+              return [
+                {
+                  id: 'tight-coupling',
+                  title: 'Tight Coupling (Bad)',
+                  code: `public class EmailService
+{
+    public void SendEmail(string to, string subject, string body)
+    {
+        Console.WriteLine($"Sending email to {to}");
+        Console.WriteLine($"Subject: {subject}");
+        Console.WriteLine($"Body: {body}");
+    }
+}
+
+public class OrderProcessor
+{
+    private readonly EmailService _emailService;
+
+    public OrderProcessor()
+    {
+        _emailService = new EmailService();
+    }
+
+    public void ProcessOrder(Order order)
+    {
+        // Process order logic
+        Console.WriteLine($"Processing order {order.Id}");
+        
+        // Send confirmation
+        _emailService.SendEmail(
+            order.CustomerEmail,
+            "Order Confirmation",
+            $"Your order {order.Id} has been processed"
+        );
+    }
+}`
+                },
+                {
+                  id: 'abstraction',
+                  title: 'Define Abstraction',
+                  code: `public interface INotificationService
+{
+    void Send(string recipient, string subject, string message);
+}`
+                },
+                {
+                  id: 'concrete-implementations',
+                  title: 'Concrete Implementations',
+                  code: `public class EmailService : INotificationService
+{
+    public void Send(string recipient, string subject, string message)
+    {
+        Console.WriteLine($"Sending email to {recipient}");
+        Console.WriteLine($"Subject: {subject}");
+        Console.WriteLine($"Message: {message}");
+    }
+}
+
+public class SmsService : INotificationService
+{
+    public void Send(string recipient, string subject, string message)
+    {
+        Console.WriteLine($"Sending SMS to {recipient}");
+        Console.WriteLine($"Message: {message}");
+    }
+}
+
+public class PushNotificationService : INotificationService
+{
+    public void Send(string recipient, string subject, string message)
+    {
+        Console.WriteLine($"Sending push notification to {recipient}");
+        Console.WriteLine($"Title: {subject}");
+        Console.WriteLine($"Message: {message}");
+    }
+}`
+                },
+                {
+                  id: 'dependency-injection',
+                  title: 'Dependency Injection',
+                  code: `public class OrderProcessor
+{
+    private readonly INotificationService _notificationService;
+
+    // Dependency Injection via constructor
+    public OrderProcessor(INotificationService notificationService)
+    {
+        _notificationService = notificationService;
+    }
+
+    public void ProcessOrder(Order order)
+    {
+        Console.WriteLine($"Processing order {order.Id}");
+        
+        _notificationService.Send(
+            order.CustomerEmail,
+            "Order Confirmation",
+            $"Your order {order.Id} has been processed"
+        );
+    }
+}
+
+// Usage
+var emailProcessor = new OrderProcessor(new EmailService());
+emailProcessor.ProcessOrder(order);
+
+var smsProcessor = new OrderProcessor(new SmsService());
+smsProcessor.ProcessOrder(order);`
+                }
+              ];
+            case 'repository-pattern':
+              return [
+                {
+                  id: 'tight-coupling',
+                  title: 'Tight Coupling (Bad)',
+                  code: `public class OrderService
+{
+    private readonly SqlConnection _connection;
+
+    public OrderService(string connectionString)
+    {
+        _connection = new SqlConnection(connectionString);
+    }
+
+    public Order GetOrder(int orderId)
+    {
+        var command = new SqlCommand("SELECT * FROM Orders WHERE Id = @Id", _connection);
+        command.Parameters.AddWithValue("@Id", orderId);
+        
+        _connection.Open();
+        var reader = command.ExecuteReader();
+        // Manual mapping logic...
+        _connection.Close();
+        
+        return order;
+    }
+}`
+                },
+                {
+                  id: 'repository-interface',
+                  title: 'Repository Interface',
+                  code: `public interface IOrderRepository
+{
+    Order GetById(int id);
+    IEnumerable<Order> GetAll();
+    void Add(Order order);
+    void Update(Order order);
+    void Delete(int id);
+}`
+                },
+                {
+                  id: 'concrete-repository',
+                  title: 'Concrete Repository',
+                  code: `public class SqlOrderRepository : IOrderRepository
+{
+    private readonly string _connectionString;
+
+    public SqlOrderRepository(string connectionString)
+    {
+        _connectionString = connectionString;
+    }
+
+    public Order GetById(int id)
+    {
+        using (var connection = new SqlConnection(_connectionString))
+        {
+            connection.Open();
+            var command = new SqlCommand("SELECT * FROM Orders WHERE Id = @Id", connection);
+            command.Parameters.AddWithValue("@Id", id);
+            
+            using (var reader = command.ExecuteReader())
+            {
+                if (reader.Read())
+                {
+                    return new Order
+                    {
+                        Id = (int)reader["Id"],
+                        CustomerId = (int)reader["CustomerId"],
+                        Total = (decimal)reader["Total"],
+                        Status = (string)reader["Status"]
+                    };
+                }
+            }
+        }
+        return null;
+    }
+
+    public IEnumerable<Order> GetAll()
+    {
+        var orders = new List<Order>();
+        using (var connection = new SqlConnection(_connectionString))
+        {
+            connection.Open();
+            var command = new SqlCommand("SELECT * FROM Orders", connection);
+            
+            using (var reader = command.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    orders.Add(new Order
+                    {
+                        Id = (int)reader["Id"],
+                        CustomerId = (int)reader["CustomerId"],
+                        Total = (decimal)reader["Total"],
+                        Status = (string)reader["Status"]
+                    });
+                }
+            }
+        }
+        return orders;
+    }
+
+    public void Add(Order order)
+    {
+        using (var connection = new SqlConnection(_connectionString))
+        {
+            connection.Open();
+            var command = new SqlCommand(
+                "INSERT INTO Orders (CustomerId, Total, Status) VALUES (@CustomerId, @Total, @Status)",
+                connection);
+            command.Parameters.AddWithValue("@CustomerId", order.CustomerId);
+            command.Parameters.AddWithValue("@Total", order.Total);
+            command.Parameters.AddWithValue("@Status", order.Status);
+            command.ExecuteNonQuery();
+        }
+    }
+
+    public void Update(Order order)
+    {
+        using (var connection = new SqlConnection(_connectionString))
+        {
+            connection.Open();
+            var command = new SqlCommand(
+                "UPDATE Orders SET CustomerId = @CustomerId, Total = @Total, Status = @Status WHERE Id = @Id",
+                connection);
+            command.Parameters.AddWithValue("@Id", order.Id);
+            command.Parameters.AddWithValue("@CustomerId", order.CustomerId);
+            command.Parameters.AddWithValue("@Total", order.Total);
+            command.Parameters.AddWithValue("@Status", order.Status);
+            command.ExecuteNonQuery();
+        }
+    }
+
+    public void Delete(int id)
+    {
+        using (var connection = new SqlConnection(_connectionString))
+        {
+            connection.Open();
+            var command = new SqlCommand("DELETE FROM Orders WHERE Id = @Id", connection);
+            command.Parameters.AddWithValue("@Id", id);
+            command.ExecuteNonQuery();
+        }
+    }
+}`
+                },
+                {
+                  id: 'service-layer',
+                  title: 'Service Layer',
+                  code: `public class OrderService
+{
+    private readonly IOrderRepository _orderRepository;
+
+    public OrderService(IOrderRepository orderRepository)
+    {
+        _orderRepository = orderRepository;
+    }
+
+    public Order GetOrder(int orderId)
+    {
+        return _orderRepository.GetById(orderId);
+    }
+
+    public IEnumerable<Order> GetAllOrders()
+    {
+        return _orderRepository.GetAll();
+    }
+
+    public void CreateOrder(Order order)
+    {
+        // Business logic validation
+        if (order.Total <= 0)
+            throw new ArgumentException("Order total must be greater than zero");
+
+        _orderRepository.Add(order);
+    }
+
+    public void UpdateOrder(Order order)
+    {
+        // Business logic validation
+        if (order.Total <= 0)
+            throw new ArgumentException("Order total must be greater than zero");
+
+        _orderRepository.Update(order);
+    }
+
+    public void CancelOrder(int orderId)
+    {
+        var order = _orderRepository.GetById(orderId);
+        if (order != null)
+        {
+            order.Status = "Cancelled";
+            _orderRepository.Update(order);
+        }
+    }
+}`
+                },
+                {
+                  id: 'usage-example',
+                  title: 'Usage Example',
+                  code: `// In Startup.cs or Program.cs
+services.AddScoped<IOrderRepository, SqlOrderRepository>();
+services.AddScoped<OrderService>();
+
+// In controller or service
+public class OrderController
+{
+    private readonly OrderService _orderService;
+
+    public OrderController(OrderService orderService)
+    {
+        _orderService = orderService;
+    }
+
+    public IActionResult GetOrder(int id)
+    {
+        var order = _orderService.GetOrder(id);
+        if (order == null)
+            return NotFound();
+        
+        return Ok(order);
+    }
+
+    public IActionResult CreateOrder(CreateOrderRequest request)
+    {
+        var order = new Order
+        {
+            CustomerId = request.CustomerId,
+            Total = request.Total,
+            Status = "Pending"
+        };
+
+        _orderService.CreateOrder(order);
+        return CreatedAtAction(nameof(GetOrder), new { id = order.Id }, order);
+    }
+}`
+                }
+              ];
+            case 'singleton-design-pattern':
+              return [
+                {
+                  id: 'thread-safe-singleton',
+                  title: 'Thread-Safe Singleton (C#)',
+                  code: `public sealed class ConfigurationManager
+{
+    private static readonly Lazy<ConfigurationManager> _instance = 
+        new Lazy<ConfigurationManager>(() => new ConfigurationManager());
+
+    private Dictionary<string, string> _settings;
+
+    private ConfigurationManager()
+    {
+        // Private constructor prevents external instantiation
+        _settings = new Dictionary<string, string>();
+        LoadConfiguration();
+    }
+
+    public static ConfigurationManager Instance => _instance.Value;
+
+    private void LoadConfiguration()
+    {
+        // Load configuration from file or environment
+        _settings["AppName"] = "My Application";
+        _settings["Version"] = "1.0.0";
+    }
+
+    public string GetSetting(string key)
+    {
+        return _settings.ContainsKey(key) ? _settings[key] : null;
+    }
+
+    public void SetSetting(string key, string value)
+    {
+        _settings[key] = value;
+    }
+}
+
+// Usage
+var config = ConfigurationManager.Instance;
+Console.WriteLine(config.GetSetting("AppName"));`
+                },
+                {
+                  id: 'module-pattern-js',
+                  title: 'Module Pattern (JavaScript)',
+                  code: `class Logger {
+  private static instance: Logger;
+  private logs: string[] = [];
+
+  private constructor() {
+    // Private constructor
+  }
+
+  public static getInstance(): Logger {
+    if (!Logger.instance) {
+      Logger.instance = new Logger();
+    }
+    return Logger.instance;
+  }
+
+  public log(message: string): void {
+    const timestamp = new Date().toISOString();
+    const logEntry = \`\${timestamp}: \${message}\`;
+    this.logs.push(logEntry);
+    console.log(logEntry);
+  }
+
+  public getLogs(): string[] {
+    return [...this.logs];
+  }
+}
+
+// Usage
+const logger1 = Logger.getInstance();
+const logger2 = Logger.getInstance();
+
+console.log(logger1 === logger2); // true
+
+logger1.log("Application started");
+logger2.log("User logged in");
+
+console.log(logger1.getLogs());`
+                },
+                {
+                  id: 'double-checked-locking',
+                  title: 'Double-Checked Locking',
+                  code: `public sealed class Singleton
+{
+    private static Singleton _instance;
+    private static readonly object _lock = new object();
+
+    private Singleton()
+    {
+        // Private constructor
+    }
+
+    public static Singleton Instance
+    {
+        get
+        {
+            if (_instance == null)
+            {
+                lock (_lock)
+                {
+                    if (_instance == null)
+                    {
+                        _instance = new Singleton();
+                    }
+                }
+            }
+            return _instance;
+        }
+    }
+
+    public void DoSomething()
+    {
+        Console.WriteLine("Singleton instance doing something");
+    }
+}
+
+// Usage (thread-safe)
+var singleton1 = Singleton.Instance;
+var singleton2 = Singleton.Instance;
+Console.WriteLine(singleton1 == singleton2); // true`
+                },
+                {
+                  id: 'static-initialization',
+                  title: 'Static Initialization',
+                  code: `public sealed class Singleton
+{
+    private static readonly Singleton _instance = new Singleton();
+
+    private Singleton()
+    {
+        // Private constructor
+    }
+
+    public static Singleton Instance
+    {
+        get { return _instance; }
+    }
+
+    public void DoSomething()
+    {
+        Console.WriteLine("Singleton instance doing something");
+    }
+}
+
+// Usage (thread-safe by CLR)
+var singleton1 = Singleton.Instance;
+var singleton2 = Singleton.Instance;
+Console.WriteLine(singleton1 == singleton2); // true`
+                },
+                {
+                  id: 'anti-patterns',
+                  title: 'Common Anti-Patterns',
+                  code: `// Anti-pattern 1: Not thread-safe
+public class NotThreadSafeSingleton
+{
+    private static NotThreadSafeSingleton _instance;
+
+    private NotThreadSafeSingleton() { }
+
+    public static NotThreadSafeSingleton Instance
+    {
+        get
+        {
+            if (_instance == null)
+            {
+                _instance = new NotThreadSafeSingleton(); // Race condition!
+            }
+            return _instance;
+        }
+    }
+}
+
+// Anti-pattern 2: Overly complex
+public class OverlyComplexSingleton
+{
+    private static volatile OverlyComplexSingleton _instance;
+    private static object _lock = new object();
+
+    private OverlyComplexSingleton()
+    {
+        // Complex initialization
+        Thread.Sleep(1000); // Simulate slow initialization
+    }
+
+    public static OverlyComplexSingleton Instance
+    {
+        get
+        {
+            if (_instance == null)
+            {
+                lock (_lock)
+                {
+                    if (_instance == null)
+                    {
+                        _instance = new OverlyComplexSingleton();
+                    }
+                }
+            }
+            return _instance;
+        }
+    }
+}`
+                }
+              ];
+            default:
+              return [];
+          }
+        };
+
+        elements.push(
+          <InteractiveCodeEditor
+            key={`editor-${index}`}
+            tabs={getTabsForPost(post.slug)}
+            defaultTab={getTabsForPost(post.slug)[0]?.id || ''}
           />
         );
       }
@@ -172,90 +758,6 @@ processor.ProcessPayment(50);
 
     return elements;
   }, [post]);
-
-  // Helper function to convert markdown to HTML
-  const convertMarkdownToHtml = (text: string): string => {
-    // Handle headers
-    let result = text.replace(/^### (.*$)/gm, '<h3 class="text-xl font-semibold text-white mt-8 mb-4">$1</h3>');
-    result = result.replace(/^## (.*$)/gm, '<h2 class="text-2xl font-semibold text-white mt-8 mb-4">$1</h2>');
-    result = result.replace(/^# (.*$)/gm, '<h1 class="text-3xl font-bold text-white mt-8 mb-4">$1</h1>');
-
-    // Handle bold and italic
-    result = result.replace(/\*\*(.+?)\*\*/g, '<strong class="text-white">$1</strong>');
-    result = result.replace(/\*(.+?)\*/g, '<em class="text-gray-300">$1</em>');
-
-    // Handle lists
-    result = result.replace(/^- (.*$)/gm, '<li class="text-gray-300 ml-4">$1</li>');
-    result = result.replace(/(<li.*<\/li>\n?)+/g, '<ul class="list-disc list-inside mb-4">$&</ul>');
-
-    // Handle paragraphs
-    result = result.replace(/\n\n/g, '</p><p class="text-gray-300 leading-relaxed mb-4">');
-    result = '<p class="text-gray-300 leading-relaxed mb-4">' + result + '</p>';
-
-    return result;
-  };
-          return '';
-        }
-        
-        if (!inTable) {
-          inTable = true;
-          isFirstRow = true;
-          const headerCells = cells.map(cell => `<th class="border border-purple-900/30 px-4 py-2 text-left text-white">${convertMarkdown(cell.trim())}</th>`).join('');
-          return `<table class="w-full my-6 border-collapse border border-purple-900/30"><thead><tr>${headerCells}</tr></thead><tbody>`;
-        } else if (isFirstRow) {
-          isFirstRow = false;
-          return '';
-        } else {
-          const bodyCells = cells.map(cell => `<td class="border border-purple-900/30 px-4 py-2">${convertMarkdown(cell.trim())}</td>`).join('');
-          
-          // Check if next line is still part of table
-          const nextLine = lines[index + 1];
-          if (!nextLine || !nextLine.trim().startsWith('|')) {
-            inTable = false;
-            return `<tr>${bodyCells}</tr></tbody></table>`;
-          }
-          return `<tr>${bodyCells}</tr>`;
-        }
-      }
-      
-      // Reset table state if we're not in a table line
-      if (inTable && !line.trim().startsWith('|')) {
-        inTable = false;
-      }
-      
-      // Handle horizontal rules
-      if (line.trim() === '---') {
-        return `<hr class="my-8 border-t border-purple-900/30" />`;
-      }
-      
-      if (line.startsWith('# ')) {
-        return `<h1 class="text-4xl font-light text-white mt-12 mb-6">${convertMarkdown(line.substring(2))}</h1>`;
-      } else if (line.startsWith('## ')) {
-        return `<h2 class="text-3xl font-light text-white mt-10 mb-4">${convertMarkdown(line.substring(3))}</h2>`;
-      } else if (line.startsWith('### ')) {
-        return `<h3 class="text-2xl font-light text-white mt-8 mb-3">${convertMarkdown(line.substring(4))}</h3>`;
-      } else if (line.startsWith('- **')) {
-        const match = line.match(/- \*\*(.+?)\*\*: (.+)/);
-        if (match) {
-          return `<li class="ml-4"><strong class="text-white">${match[1]}</strong>: ${convertMarkdown(match[2])}</li>`;
-        }
-        return `<li class="ml-4">${convertMarkdown(line.substring(2))}</li>`;
-      } else if (line.startsWith('- ')) {
-        return `<li class="ml-4 list-disc">${convertMarkdown(line.substring(2))}</li>`;
-      } else if (line.startsWith('✅ **')) {
-        return `<p class="text-green-400">${convertMarkdown(line.replace('✅ ', ''))}</p>`;
-      } else if (line.startsWith('❌ **')) {
-        return `<p class="text-red-400">${convertMarkdown(line.replace('❌ ', ''))}</p>`;
-      } else if (line.trim() === '') {
-        return '';
-      }
-      return `<p>${convertMarkdown(line)}</p>`;
-    }).join('');
-  }, [post]);
-
-  useEffect(() => {
-    hljs.highlightAll();
-  }, [renderContent]);
 
   if (!post) {
     return (
@@ -311,30 +813,32 @@ processor.ProcessPayment(50);
       </div>
 
       <Navbar />
-      <main className="flex-1 container mx-auto px-4 py-20 max-w-4xl relative z-1">
-        <Link href="/blog" className="text-purple-400 hover:text-purple-300 mb-8 inline-block">
-          ← Back to Blog
-        </Link>
-        
-        <article className="prose prose-invert prose-purple max-w-none">
-          <div className="mb-8">
-            <span className="text-xs text-purple-400 uppercase tracking-wider">{post.category}</span>
-            <h1 className="text-5xl font-light text-white mt-4 mb-4">{post.title}</h1>
-            <div className="flex items-center gap-4 text-sm text-gray-400">
-              <span>{post.author}</span>
-              <span>•</span>
-              <span>{post.date}</span>
-              <span>•</span>
-              <span>{post.readTime}</span>
+      <main className="flex-1 pt-16 relative z-1">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <Link href="/blog" className="text-purple-400 hover:text-purple-300 mb-8 inline-block">
+            ← Back to Blog
+          </Link>
+          
+          <article className="prose prose-invert prose-purple max-w-none">
+            <div className="mb-8">
+              <span className="text-xs text-purple-400 uppercase tracking-wider">{post.category}</span>
+              <h1 className="text-5xl font-light text-white mt-4 mb-4">{post.title}</h1>
+              <div className="flex items-center gap-4 text-sm text-gray-400">
+                <span>{post.author}</span>
+                <span>•</span>
+                <span>{post.date}</span>
+                <span>•</span>
+                <span>{post.readTime}</span>
+              </div>
             </div>
-          </div>
 
-          <div className="h-px w-full bg-gradient-to-r from-transparent via-purple-400/30 to-transparent mb-12"></div>
+            <div className="h-px w-full bg-gradient-to-r from-transparent via-purple-400/30 to-transparent mb-12"></div>
 
-          <article className="text-gray-300 leading-relaxed space-y-6">
-            {renderContent}
+            <article className="text-gray-300 leading-relaxed space-y-6">
+              {renderContent}
+            </article>
           </article>
-        </article>
+        </div>
       </main>
       <Footer />
     </div>
