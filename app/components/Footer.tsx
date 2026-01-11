@@ -10,7 +10,7 @@ export function Footer() {
               <span className="text-xl font-light text-white tracking-wider">Eternal</span>
             </div>
             <p className="text-gray-500 text-sm max-w-md">
-              Deep dives into software engineering, design patterns, and cutting-edge technology.
+              Thoughts and insights on technology, design, and innovation.
             </p>
           </div>
 

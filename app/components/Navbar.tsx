@@ -7,10 +7,6 @@ export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  const handleSubscribe = () => {
-    alert('Thanks for your interest! Newsletter signup coming soon.');
-  };
-
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
@@ -40,22 +36,13 @@ export function Navbar() {
             <Link href="/blog" className="text-sm text-gray-400 hover:text-white hover:scale-105 transition-all duration-200">Articles</Link>
           </div>
 
-          <div className="flex items-center space-x-4">
-            <button 
-              onClick={handleSubscribe}
-              className="cursor-pointer hidden md:block px-4 py-2 text-sm border border-purple-600/30 text-purple-200 hover:border-purple-600/60 hover:text-white hover:bg-purple-600/10 hover:scale-105 transition-all duration-200 rounded-sm"
-            >
-              Subscribe
-            </button>
-
-            <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="md:hidden px-3 py-1.5 text-sm border border-purple-600/30 text-purple-200 hover:border-purple-600/60 hover:text-white transition-all duration-200 rounded-sm"
-              aria-label="Toggle menu"
-            >
-              Menu
-            </button>
-          </div>
+          <button
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className="md:hidden px-3 py-1.5 text-sm border border-purple-600/30 text-purple-200 hover:border-purple-600/60 hover:text-white transition-all duration-200 rounded-sm"
+            aria-label="Toggle menu"
+          >
+            Menu
+          </button>
         </div>
       </div>
 
@@ -82,16 +69,6 @@ export function Navbar() {
           >
             Articles
           </Link>
-          <div className="border-t border-purple-900/20 my-2"></div>
-          <button
-            onClick={() => {
-              handleSubscribe();
-              setIsMenuOpen(false);
-            }}
-            className="w-full text-left px-4 py-2 text-sm text-purple-200 hover:text-white hover:bg-purple-600/10 transition-all duration-200"
-          >
-            Subscribe
-          </button>
         </div>
       </div>
     </nav>
