@@ -1,7 +1,7 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import { useMemo, useEffect } from 'react';
+import { useMemo, useEffect, JSX } from 'react';
 import hljs from 'highlight.js';
 import 'highlight.js/styles/github-dark.css';
 import { Navbar } from "../../components/Navbar";
@@ -39,6 +39,8 @@ export default function BlogPostPage() {
   };
 
   const renderContent = useMemo(() => {
+    if (!post) return [];
+
     const contentParts = post.content.split('[INTERACTIVE_CODE_EDITOR]');
     const elements: JSX.Element[] = [];
 

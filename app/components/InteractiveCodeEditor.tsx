@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import hljs from 'highlight.js/lib/core';
 import csharp from 'highlight.js/lib/languages/csharp';
-import { Copy } from 'lucide-react';
+import { LuCopy } from 'react-icons/lu';
 
 // Register C# language
 hljs.registerLanguage('csharp', csharp);
@@ -65,9 +65,9 @@ export function InteractiveCodeEditor({ tabs, defaultTab }: InteractiveCodeEdito
           <div className="flex items-center space-x-2">
             <button
               onClick={copyToClipboard}
-              className="flex items-center space-x-1 px-3 py-1 text-xs bg-neutral-900/90 hover:bg-neutral-950 text-white rounded transition-colors duration-200"
+              className="cursor-pointer flex items-center space-x-1 px-3 py-1 text-xs bg-neutral-900/90 hover:bg-neutral-950 text-white rounded transition-colors duration-200"
             >
-              <Copy size={12} />
+              <LuCopy size={12} />
               <span>{copied ? 'Copied!' : 'Copy'}</span>
             </button>
           </div>
