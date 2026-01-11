@@ -1,7 +1,9 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import { useMemo } from 'react';
+import { useMemo, useEffect } from 'react';
+import hljs from 'highlight.js';
+import 'highlight.js/styles/github-dark.css';
 import { Navbar } from "../../components/Navbar";
 import { Footer } from "../../components/Footer";
 import Link from 'next/link';
@@ -34,9 +36,11 @@ export default function BlogPostPage() {
       // Handle code blocks first - they take priority over everything else
       if (line.startsWith('```')) {
         inCodeBlock = !inCodeBlock;
-        return inCodeBlock 
-          ? `<pre class="bg-neutral-900/30 p-4 rounded overflow-x-auto my-4"><code class="text-sm text-stone-200">`
-          : '</code></pre>';
+        if (inCodeBlock) {
+          const language = line.substring(3).trim() || 'plaintext';
+          return `<pre class="my-4 rounded overflow-x-auto"><code class="language-${language}">`;
+        }
+        return '</code></pre>';
       }
       
       // If we're inside a code block, return the line as-is (escaped)
@@ -109,6 +113,10 @@ export default function BlogPostPage() {
       return `<p>${convertMarkdown(line)}</p>`;
     }).join('');
   }, [post]);
+
+  useEffect(() => {
+    hljs.highlightAll();
+  }, [htmlContent]);
 
   if (!post) {
     return (
