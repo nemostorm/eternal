@@ -3,7 +3,8 @@
 import { useParams } from 'next/navigation';
 import { useMemo, useEffect, JSX } from 'react';
 import hljs from 'highlight.js';
-import 'highlight.js/styles/github-dark.css';
+import csharp from 'highlight.js/lib/languages/csharp';
+import '../../purple-green-dark.css';
 import { Navbar } from "../../components/Navbar";
 import { Footer } from "../../components/Footer";
 import { InteractiveCodeEditor } from "../../components/InteractiveCodeEditor";
@@ -16,10 +17,16 @@ export default function BlogPostPage() {
   
   const post = blogPosts.find(p => p.slug === slug);
 
+  // Register C# language
+  hljs.registerLanguage('csharp', csharp);
+
   // Helper function to convert markdown to HTML
   const convertMarkdownToHtml = (text: string): string => {
+    // First, unescape backticks for code blocks
+    let result = text.replace(/\\`/g, '`');
+
     // Handle headers
-    let result = text.replace(/^### (.*$)/gm, '<h3 class="text-xl font-semibold text-white mt-8 mb-4">$1</h3>');
+    result = result.replace(/^### (.*$)/gm, '<h3 class="text-xl font-semibold text-white mt-8 mb-4">$1</h3>');
     result = result.replace(/^## (.*$)/gm, '<h2 class="text-2xl font-semibold text-white mt-8 mb-4">$1</h2>');
     result = result.replace(/^# (.*$)/gm, '<h1 class="text-3xl font-bold text-white mt-8 mb-4">$1</h1>');
 
@@ -30,6 +37,12 @@ export default function BlogPostPage() {
     // Handle lists
     result = result.replace(/^- (.*$)/gm, '<li class="text-gray-300 ml-4">$1</li>');
     result = result.replace(/(<li.*<\/li>\n?)+/g, '<ul class="list-disc list-inside mb-4">$&</ul>');
+
+    // Handle code blocks
+    result = result.replace(/```(\w+)?\n?([\s\S]*?)```/g, (match, language, code) => {
+      const lang = language || '';
+      return `<pre class="bg-neutral-900 p-4 rounded-lg overflow-x-auto my-4"><code class="language-${lang} text-sm">${code.trim()}</code></pre>`;
+    });
 
     // Handle paragraphs
     result = result.replace(/\n\n/g, '</p><p class="text-gray-300 leading-relaxed mb-4">');
@@ -63,195 +76,9 @@ export default function BlogPostPage() {
             case 'design-patterns-aspnet-core':
               return [
                 {
-                  id: 'di-basic',
-                  title: 'DI Registration',
-                  code: `// Program.cs - Registering services with different lifetimes
-var builder = WebApplication.CreateBuilder(args);
-
-// Transient - New instance every time
-builder.Services.AddTransient<IEmailService, EmailService>();
-
-// Scoped - One instance per HTTP request
-builder.Services.AddScoped<IOrderRepository, OrderRepository>();
-builder.Services.AddScoped<IOrderService, OrderService>();
-
-// Singleton - One instance for the entire application
-builder.Services.AddSingleton<ICacheService, MemoryCacheService>();
-builder.Services.AddSingleton<IConfiguration>(builder.Configuration);
-
-// DbContext is always Scoped
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("Default")));
-
-var app = builder.Build();
-app.MapControllers();
-app.Run();`
-                },
-                {
-                  id: 'di-usage',
-                  title: 'Constructor Injection',
-                  code: `// Controllers/OrdersController.cs
-[ApiController]
-[Route("api/[controller]")]
-public class OrdersController : ControllerBase
-{
-    private readonly IOrderService _orderService;
-    private readonly ILogger<OrdersController> _logger;
-    private readonly ICacheService _cache;
-
-    // All dependencies injected via constructor
-    public OrdersController(
-        IOrderService orderService,
-        ILogger<OrdersController> logger,
-        ICacheService cache)
-    {
-        _orderService = orderService;
-        _logger = logger;
-        _cache = cache;
-    }
-
-    [HttpGet("{id}")]
-    public async Task<ActionResult<Order>> GetOrder(int id)
-    {
-        _logger.LogInformation("Fetching order {OrderId}", id);
-        
-        var cacheKey = $"order_{id}";
-        var cachedOrder = _cache.Get<Order>(cacheKey);
-        
-        if (cachedOrder != null)
-            return Ok(cachedOrder);
-
-        var order = await _orderService.GetOrderByIdAsync(id);
-        
-        if (order == null)
-            return NotFound();
-
-        _cache.Set(cacheKey, order, TimeSpan.FromMinutes(5));
-        return Ok(order);
-    }
-
-    [HttpPost]
-    public async Task<ActionResult<Order>> CreateOrder(CreateOrderDto dto)
-    {
-        var order = await _orderService.CreateOrderAsync(dto);
-        return CreatedAtAction(nameof(GetOrder), new { id = order.Id }, order);
-    }
-}`
-                },
-                {
-                  id: 'options-pattern',
-                  title: 'Options Pattern',
-                  code: `// appsettings.json
-{
-  "EmailSettings": {
-    "SmtpServer": "smtp.gmail.com",
-    "Port": 587,
-    "SenderEmail": "noreply@myapp.com",
-    "SenderName": "My App"
-  }
-}
-
-// Models/EmailSettings.cs
-public class EmailSettings
-{
-    public string SmtpServer { get; set; } = string.Empty;
-    public int Port { get; set; }
-    public string SenderEmail { get; set; } = string.Empty;
-    public string SenderName { get; set; } = string.Empty;
-}
-
-// Program.cs - Configure options
-builder.Services.Configure<EmailSettings>(
-    builder.Configuration.GetSection("EmailSettings"));
-
-// Services/EmailService.cs
-public class EmailService : IEmailService
-{
-    private readonly EmailSettings _settings;
-    private readonly ILogger<EmailService> _logger;
-
-    public EmailService(
-        IOptions<EmailSettings> options,
-        ILogger<EmailService> logger)
-    {
-        _settings = options.Value;
-        _logger = logger;
-    }
-
-    public async Task SendEmailAsync(string to, string subject, string body)
-    {
-        _logger.LogInformation(
-            "Sending email to {To} via {SmtpServer}:{Port}",
-            to, _settings.SmtpServer, _settings.Port);
-
-        using var client = new SmtpClient(_settings.SmtpServer, _settings.Port);
-        var message = new MailMessage(_settings.SenderEmail, to, subject, body);
-        
-        await client.SendMailAsync(message);
-    }
-}`
-                },
-                {
-                  id: 'factory-pattern',
-                  title: 'Factory Pattern',
-                  code: `// Interfaces/IPaymentProcessor.cs
-public interface IPaymentProcessor
-{
-    Task<PaymentResult> ProcessPaymentAsync(decimal amount, PaymentDetails details);
-}
-
-// Services/StripePaymentProcessor.cs
-public class StripePaymentProcessor : IPaymentProcessor
-{
-    public async Task<PaymentResult> ProcessPaymentAsync(
-        decimal amount, PaymentDetails details)
-    {
-        // Stripe-specific logic
-        return new PaymentResult { Success = true, TransactionId = "stripe_123" };
-    }
-}
-
-// Services/PayPalPaymentProcessor.cs
-public class PayPalPaymentProcessor : IPaymentProcessor
-{
-    public async Task<PaymentResult> ProcessPaymentAsync(
-        decimal amount, PaymentDetails details)
-    {
-        // PayPal-specific logic
-        return new PaymentResult { Success = true, TransactionId = "paypal_456" };
-    }
-}
-
-// Factories/PaymentProcessorFactory.cs
-public class PaymentProcessorFactory : IPaymentProcessorFactory
-{
-    private readonly IServiceProvider _serviceProvider;
-
-    public PaymentProcessorFactory(IServiceProvider serviceProvider)
-    {
-        _serviceProvider = serviceProvider;
-    }
-
-    public IPaymentProcessor Create(PaymentMethod method)
-    {
-        return method switch
-        {
-            PaymentMethod.Stripe => _serviceProvider.GetRequiredService<StripePaymentProcessor>(),
-            PaymentMethod.PayPal => _serviceProvider.GetRequiredService<PayPalPaymentProcessor>(),
-            _ => throw new ArgumentException($"Unsupported payment method: {method}")
-        };
-    }
-}
-
-// Program.cs - Register factory and processors
-builder.Services.AddScoped<StripePaymentProcessor>();
-builder.Services.AddScoped<PayPalPaymentProcessor>();
-builder.Services.AddScoped<IPaymentProcessorFactory, PaymentProcessorFactory>();`
-                },
-                {
                   id: 'repository-pattern',
                   title: 'Repository Pattern',
-                  code: `// Repositories/IOrderRepository.cs
+                  code: `// Interfaces/IOrderRepository.cs
 public interface IOrderRepository
 {
     Task<Order?> GetByIdAsync(int id);
@@ -310,81 +137,339 @@ public class OrderRepository : IOrderRepository
             await _context.SaveChangesAsync();
         }
     }
+}
+
+// Program.cs - Register repository
+builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("Default")));`
+                },
+                {
+                  id: 'strategy-pattern',
+                  title: 'Strategy Pattern',
+                  code: `// Interfaces/IPaymentStrategy.cs
+public interface IPaymentStrategy
+{
+    Task<PaymentResult> ProcessPaymentAsync(decimal amount, PaymentDetails details);
+}
+
+// Strategies/StripePaymentStrategy.cs
+public class StripePaymentStrategy : IPaymentStrategy
+{
+    private readonly IConfiguration _config;
+    private readonly ILogger<StripePaymentStrategy> _logger;
+
+    public StripePaymentStrategy(IConfiguration config, ILogger<StripePaymentStrategy> logger)
+    {
+        _config = config;
+        _logger = logger;
+    }
+
+    public async Task<PaymentResult> ProcessPaymentAsync(decimal amount, PaymentDetails details)
+    {
+        _logger.LogInformation("Processing Stripe payment of {Amount}", amount);
+        
+        // Stripe payment processing logic
+        // var stripeClient = new StripeClient(_config["Stripe:SecretKey"]);
+        // var paymentIntent = await stripeClient.PaymentIntents.CreateAsync(...);
+        
+        return new PaymentResult 
+        { 
+            Success = true, 
+            TransactionId = $"stripe_{Guid.NewGuid()}", 
+            Amount = amount 
+        };
+    }
+}
+
+// Strategies/PayPalPaymentStrategy.cs
+public class PayPalPaymentStrategy : IPaymentStrategy
+{
+    private readonly IConfiguration _config;
+    private readonly ILogger<PayPalPaymentStrategy> _logger;
+
+    public PayPalPaymentStrategy(IConfiguration config, ILogger<PayPalPaymentStrategy> logger)
+    {
+        _config = config;
+        _logger = logger;
+    }
+
+    public async Task<PaymentResult> ProcessPaymentAsync(decimal amount, PaymentDetails details)
+    {
+        _logger.LogInformation("Processing PayPal payment of {Amount}", amount);
+        
+        // PayPal payment processing logic
+        return new PaymentResult 
+        { 
+            Success = true, 
+            TransactionId = $"paypal_{Guid.NewGuid()}", 
+            Amount = amount 
+        };
+    }
+}
+
+// Context/PaymentProcessor.cs
+public class PaymentProcessor
+{
+    private IPaymentStrategy _strategy;
+
+    public PaymentProcessor(IPaymentStrategy strategy)
+    {
+        _strategy = strategy;
+    }
+
+    public void SetStrategy(IPaymentStrategy strategy)
+    {
+        _strategy = strategy;
+    }
+
+    public async Task<PaymentResult> ProcessPaymentAsync(decimal amount, PaymentDetails details)
+    {
+        return await _strategy.ProcessPaymentAsync(amount, details);
+    }
+}
+
+// Controllers/PaymentController.cs
+[ApiController]
+[Route("api/[controller]")]
+public class PaymentController : ControllerBase
+{
+    private readonly PaymentProcessor _paymentProcessor;
+
+    public PaymentController(PaymentProcessor paymentProcessor)
+    {
+        _paymentProcessor = paymentProcessor;
+    }
+
+    [HttpPost("process")]
+    public async Task<IActionResult> ProcessPayment([FromBody] PaymentRequest request)
+    {
+        IPaymentStrategy strategy = request.PaymentMethod switch
+        {
+            "stripe" => HttpContext.RequestServices.GetRequiredService<StripePaymentStrategy>(),
+            "paypal" => HttpContext.RequestServices.GetRequiredService<PayPalPaymentStrategy>(),
+            _ => throw new ArgumentException("Invalid payment method")
+        };
+
+        _paymentProcessor.SetStrategy(strategy);
+        var result = await _paymentProcessor.ProcessPaymentAsync(request.Amount, request.Details);
+
+        return result.Success ? Ok(result) : BadRequest(result);
+    }
+}`
+                },
+                {
+                  id: 'dependency-inversion',
+                  title: 'Dependency Inversion Principle',
+                  code: `// DIP: High-level modules should not depend on low-level modules.
+// Both should depend on abstractions.
+
+// Abstraction/INotificationService.cs
+public interface INotificationService
+{
+    Task SendNotificationAsync(string recipient, string subject, string message);
+}
+
+// Low-level implementations
+public class EmailService : INotificationService
+{
+    private readonly IConfiguration _config;
+    private readonly ILogger<EmailService> _logger;
+
+    public EmailService(IConfiguration config, ILogger<EmailService> logger)
+    {
+        _config = config;
+        _logger = logger;
+    }
+
+    public async Task SendNotificationAsync(string recipient, string subject, string message)
+    {
+        _logger.LogInformation("Sending email to {Recipient}", recipient);
+        
+        // Email sending logic using SMTP
+        using var client = new SmtpClient(_config["Smtp:Server"], int.Parse(_config["Smtp:Port"]));
+        var mailMessage = new MailMessage(_config["Smtp:From"], recipient, subject, message);
+        await client.SendMailAsync(mailMessage);
+    }
+}
+
+public class SmsService : INotificationService
+{
+    private readonly IConfiguration _config;
+    private readonly ILogger<SmsService> _logger;
+
+    public SmsService(IConfiguration config, ILogger<SmsService> logger)
+    {
+        _config = config;
+        _logger = logger;
+    }
+
+    public async Task SendNotificationAsync(string recipient, string subject, string message)
+    {
+        _logger.LogInformation("Sending SMS to {Recipient}", recipient);
+        
+        // SMS sending logic using Twilio or similar
+        // var twilioClient = new TwilioRestClient(_config["Twilio:AccountSid"], _config["Twilio:AuthToken"]);
+        // await twilioClient.SendMessageAsync(_config["Twilio:FromNumber"], recipient, message);
+    }
+}
+
+// High-level module/OrderService.cs
+public class OrderService
+{
+    private readonly IOrderRepository _orderRepository;
+    private readonly INotificationService _notificationService; // Depends on abstraction
+    private readonly ILogger<OrderService> _logger;
+
+    // Constructor injection - DIP in action
+    public OrderService(
+        IOrderRepository orderRepository,
+        INotificationService notificationService, // Not concrete EmailService
+        ILogger<OrderService> logger)
+    {
+        _orderRepository = orderRepository;
+        _notificationService = notificationService;
+        _logger = logger;
+    }
+
+    public async Task<OrderResult> ProcessOrderAsync(CreateOrderDto dto)
+    {
+        _logger.LogInformation("Processing order for customer {CustomerId}", dto.CustomerId);
+
+        var order = new Order
+        {
+            CustomerId = dto.CustomerId,
+            TotalAmount = dto.Items.Sum(i => i.Quantity * i.UnitPrice),
+            Status = OrderStatus.Processing,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        await _orderRepository.AddAsync(order);
+
+        // Send notification using abstracted service
+        await _notificationService.SendNotificationAsync(
+            dto.CustomerEmail,
+            "Order Confirmation",
+            $"Your order #{order.Id} has been processed successfully."
+        );
+
+        return new OrderResult { Success = true, OrderId = order.Id };
+    }
+}
+
+// Program.cs - Dependency registration
+builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+builder.Services.AddScoped<INotificationService, EmailService>(); // Can easily switch to SmsService
+builder.Services.AddScoped<OrderService>();
+
+// Controllers/OrderController.cs
+[ApiController]
+[Route("api/[controller]")]
+public class OrderController : ControllerBase
+{
+    private readonly OrderService _orderService;
+
+    public OrderController(OrderService orderService)
+    {
+        _orderService = orderService;
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> CreateOrder([FromBody] CreateOrderDto dto)
+    {
+        var result = await _orderService.ProcessOrderAsync(dto);
+        return result.Success ? Ok(result) : BadRequest(result);
+    }
 }`
                 },
                 {
                   id: 'complete-example',
-                  title: 'Complete Example',
-                  code: `// Services/OrderService.cs - Combining all patterns
-public class OrderService : IOrderService
-{
-    private readonly IOrderRepository _orderRepository;
-    private readonly IPaymentProcessorFactory _paymentFactory;
-    private readonly IEmailService _emailService;
-    private readonly ILogger<OrderService> _logger;
-    private readonly OrderSettings _settings;
+                  title: 'Complete ASP.NET Core Example',
+                  code: `// Program.cs - Combining Repository, Strategy, and DIP
+var builder = WebApplication.CreateBuilder(args);
 
-    public OrderService(
-        IOrderRepository orderRepository,
-        IPaymentProcessorFactory paymentFactory,
-        IEmailService emailService,
-        ILogger<OrderService> logger,
-        IOptions<OrderSettings> settings)
+// Register repositories (Repository Pattern)
+builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
+
+// Register strategies (Strategy Pattern)
+builder.Services.AddScoped<StripePaymentStrategy>();
+builder.Services.AddScoped<PayPalPaymentStrategy>();
+builder.Services.AddScoped<PaymentProcessor>();
+
+// Register services with DIP (Dependency Inversion)
+builder.Services.AddScoped<INotificationService, EmailService>();
+builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IProductService, ProductService>();
+
+// Database context
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("Default")));
+
+var app = builder.Build();
+
+// Controllers/ECommerceController.cs - Using all patterns
+[ApiController]
+[Route("api/[controller]")]
+public class ECommerceController : ControllerBase
+{
+    private readonly IOrderService _orderService;
+    private readonly IProductService _productService;
+    private readonly PaymentProcessor _paymentProcessor;
+    private readonly IServiceProvider _serviceProvider;
+
+    public ECommerceController(
+        IOrderService orderService,
+        IProductService productService,
+        PaymentProcessor paymentProcessor,
+        IServiceProvider serviceProvider)
     {
-        _orderRepository = orderRepository;
-        _paymentFactory = paymentFactory;
-        _emailService = emailService;
-        _logger = logger;
-        _settings = settings.Value;
+        _orderService = orderService;
+        _productService = productService;
+        _paymentProcessor = paymentProcessor;
+        _serviceProvider = serviceProvider;
     }
 
-    public async Task<OrderResult> CreateOrderAsync(CreateOrderDto dto)
+    [HttpPost("purchase")]
+    public async Task<IActionResult> Purchase([FromBody] PurchaseRequest request)
     {
-        _logger.LogInformation("Creating order for customer {CustomerId}", dto.CustomerId);
+        // Get product using Repository Pattern
+        var product = await _productService.GetProductByIdAsync(request.ProductId);
+        if (product == null) return NotFound();
 
-        // Create order entity
-        var order = new Order
+        // Calculate total
+        var total = product.Price * request.Quantity;
+
+        // Select payment strategy dynamically
+        IPaymentStrategy strategy = request.PaymentMethod.ToLower() switch
         {
-            CustomerId = dto.CustomerId,
-            TotalAmount = dto.Items.Sum(i => i.Price * i.Quantity),
-            Status = OrderStatus.Pending,
-            CreatedAt = DateTime.UtcNow
+            "stripe" => _serviceProvider.GetRequiredService<StripePaymentStrategy>(),
+            "paypal" => _serviceProvider.GetRequiredService<PayPalPaymentStrategy>(),
+            _ => throw new ArgumentException("Invalid payment method")
         };
 
-        // Process payment using factory
-        var paymentProcessor = _paymentFactory.Create(dto.PaymentMethod);
-        var paymentResult = await paymentProcessor.ProcessPaymentAsync(
-            order.TotalAmount, 
-            dto.PaymentDetails);
+        _paymentProcessor.SetStrategy(strategy);
+        var paymentResult = await _paymentProcessor.ProcessPaymentAsync(total, request.PaymentDetails);
 
         if (!paymentResult.Success)
+            return BadRequest("Payment failed");
+
+        // Create order using DIP (OrderService depends on abstractions)
+        var orderDto = new CreateOrderDto
         {
-            _logger.LogWarning("Payment failed for order");
-            return new OrderResult { Success = false, Error = "Payment failed" };
-        }
-
-        order.Status = OrderStatus.Paid;
-        order.PaymentTransactionId = paymentResult.TransactionId;
-
-        // Save using repository
-        await _orderRepository.AddAsync(order);
-
-        // Send confirmation email
-        await _emailService.SendEmailAsync(
-            dto.CustomerEmail,
-            "Order Confirmation",
-            $"Your order #{order.Id} has been confirmed!");
-
-        _logger.LogInformation("Order {OrderId} created successfully", order.Id);
-
-        return new OrderResult 
-        { 
-            Success = true, 
-            OrderId = order.Id,
-            TransactionId = paymentResult.TransactionId
+            CustomerId = request.CustomerId,
+            CustomerEmail = request.CustomerEmail,
+            Items = new[] { new OrderItemDto { ProductId = product.Id, Quantity = request.Quantity, UnitPrice = product.Price } }
         };
+
+        var orderResult = await _orderService.CreateOrderAsync(orderDto);
+
+        return orderResult.Success ? Ok(new { OrderId = orderResult.OrderId, TransactionId = paymentResult.TransactionId }) : BadRequest();
     }
-}`
+}
+
+app.MapControllers();
+app.Run();`
                 }
               ];
             case 'aspnet-core-middleware-pattern':
@@ -1293,6 +1378,11 @@ public class OverlyComplexSingleton
 
     return elements;
   }, [post]);
+
+  // Apply syntax highlighting to code blocks after render
+  useEffect(() => {
+    hljs.highlightAll();
+  }, [renderContent]);
 
   if (!post) {
     return (

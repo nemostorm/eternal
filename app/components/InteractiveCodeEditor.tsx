@@ -35,7 +35,7 @@ export function InteractiveCodeEditor({ tabs, defaultTab }: InteractiveCodeEdito
   };
 
   return (
-    <div className="bg-neutral-950 rounded-lg border border-purple-900/30 overflow-hidden my-6">
+    <div className="bg-neutral-900 rounded-lg border border-purple-900/30 overflow-hidden my-6">
       {/* Tab Headers */}
       <div className="flex border-b border-purple-900/30 bg-neutral-800/10">
         {tabs.map((tab) => (
@@ -59,7 +59,7 @@ export function InteractiveCodeEditor({ tabs, defaultTab }: InteractiveCodeEdito
         <div className="flex items-center justify-between px-4 py-2 bg-neutral-900/30 border-b border-gray-700/50">
           <div className="flex items-center space-x-2">
             <span className="text-xs text-gray-400">
-              {activeTabData?.language || 'csharp'} • Strategy Pattern Example
+              {activeTabData?.language || 'csharp'}
             </span>
           </div>
           <div className="flex items-center space-x-2">
@@ -74,10 +74,10 @@ export function InteractiveCodeEditor({ tabs, defaultTab }: InteractiveCodeEdito
         </div>
 
         {/* Code Content */}
-        <div className="p-4 overflow-x-auto">
+        <div className="p-4 overflow-x-auto bg-neutral-900">
           <pre className="text-sm">
             <code
-              className="language-csharp hljs"
+              className="language-csharp hljs bg-neutral-900 border-sm"
               dangerouslySetInnerHTML={{
                 __html: activeTabData ? hljs.highlight(activeTabData.code, { language: activeTabData.language || 'csharp' }).value : ''
               }}
