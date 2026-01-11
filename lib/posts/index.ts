@@ -5,9 +5,11 @@ import { nvidiaSpectrumXPost } from './nvidia-spectrum-x-switches';
 import { dependencyInversionPost } from './dependency-inversion-principle';
 import { aspNetCoreMiddlewarePost } from './aspnet-core-middleware-pattern';
 import { designPatternsAspNetCorePost } from './design-patterns-aspnet-core';
+import { csharpDotnetBackendPost } from './csharp-dotnet-backend-development';
 import { BlogPost } from './types';
 
 export const blogPosts: BlogPost[] = [
+  csharpDotnetBackendPost,
   designPatternsAspNetCorePost,
   aspNetCoreMiddlewarePost,
   dependencyInversionPost,

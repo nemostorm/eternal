@@ -1,10 +1,29 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Navbar } from "../components/Navbar";
 import { Footer } from "../components/Footer";
 import { BlogCard } from "../components/BlogCard";
 import { blogPosts } from '@/lib/posts';
+
+// Typewriter component
+function Typewriter({ text, speed = 50 }: { text: string; speed?: number }) {
+  const [displayText, setDisplayText] = useState('');
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    if (currentIndex < text.length) {
+      const timeout = setTimeout(() => {
+        setDisplayText(prev => prev + text[currentIndex]);
+        setCurrentIndex(prev => prev + 1);
+      }, speed);
+
+      return () => clearTimeout(timeout);
+    }
+  }, [currentIndex, text, speed]);
+
+  return <span>{displayText}<span className="animate-pulse">|</span></span>;
+}
 
 export default function Blog() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -58,10 +77,10 @@ export default function Blog() {
 
       <Navbar />
       <main className="flex-1 pt-16 relative z-1">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <h1 className="text-4xl font-light text-white mb-8 tracking-wider">Tech Blog</h1>
           <p className="text-lg text-gray-400 mb-12">
-            Ideas, insights, and explorations across the digital landscape.
+            <Typewriter text="Ideas, insights, and explorations across the digital landscape." speed={15} />
           </p>
 
           {/* Search Bar */}
@@ -77,28 +96,29 @@ export default function Blog() {
 
           {/* Scrollable Blog Feed */}
           <div className="relative">
-            {/* Fade gradient overlay at top */}
-            <div className="absolute top-0 left-0 right-0 h-16 bg-gradient-to-b from-black to-transparent pointer-events-none z-10"></div>
+            {/* Fade gradient overlay at top - hidden on large screens */}
+            <div className="absolute top-0 left-0 right-0 h-16 bg-gradient-to-b from-black to-transparent pointer-events-none z-10 lg:hidden"></div>
             
-            <div className="max-h-[32rem] overflow-y-auto scrollbar-thin scrollbar-thumb-purple-600/30">
-              <div className="space-y-6 pr-4">
+            <div className="max-h-[32rem] overflow-y-auto scrollbar-thin scrollbar-thumb-purple-600/30 lg:max-h-none lg:overflow-visible">
+              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 lg:gap-4 xl:gap-3 pr-4 lg:pr-0">
                 {filteredPosts.map((post, index) => (
-                  <BlogCard
-                    key={index}
-                    slug={post.slug}
-                    title={post.title}
-                    excerpt={post.excerpt}
-                    date={post.date}
-                    author={post.author}
-                    readTime={post.readTime}
-                    category={post.category}
-                  />
+                  <div key={index} className="animate-in fade-in slide-in-from-bottom-4 duration-300">
+                    <BlogCard
+                      slug={post.slug}
+                      title={post.title}
+                      excerpt={post.excerpt}
+                      date={post.date}
+                      author={post.author}
+                      readTime={post.readTime}
+                      category={post.category}
+                    />
+                  </div>
                 ))}
               </div>
             </div>
 
-            {/* Fade gradient overlay at bottom */}
-            <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-black to-transparent pointer-events-none z-10"></div>
+            {/* Fade gradient overlay at bottom - hidden on large screens */}
+            <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-black to-transparent pointer-events-none z-10 lg:hidden"></div>
           </div>
         </div>
       </main>
