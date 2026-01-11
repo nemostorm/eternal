@@ -58,6 +58,539 @@ export default function BlogPostPage() {
       if (index < contentParts.length - 1) {
         const getTabsForPost = (slug: string) => {
           switch (slug) {
+            case 'design-patterns-aspnet-core':
+              return [
+                {
+                  id: 'di-basic',
+                  title: 'DI Registration',
+                  code: `// Program.cs - Registering services with different lifetimes
+var builder = WebApplication.CreateBuilder(args);
+
+// Transient - New instance every time
+builder.Services.AddTransient<IEmailService, EmailService>();
+
+// Scoped - One instance per HTTP request
+builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+builder.Services.AddScoped<IOrderService, OrderService>();
+
+// Singleton - One instance for the entire application
+builder.Services.AddSingleton<ICacheService, MemoryCacheService>();
+builder.Services.AddSingleton<IConfiguration>(builder.Configuration);
+
+// DbContext is always Scoped
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("Default")));
+
+var app = builder.Build();
+app.MapControllers();
+app.Run();`
+                },
+                {
+                  id: 'di-usage',
+                  title: 'Constructor Injection',
+                  code: `// Controllers/OrdersController.cs
+[ApiController]
+[Route("api/[controller]")]
+public class OrdersController : ControllerBase
+{
+    private readonly IOrderService _orderService;
+    private readonly ILogger<OrdersController> _logger;
+    private readonly ICacheService _cache;
+
+    // All dependencies injected via constructor
+    public OrdersController(
+        IOrderService orderService,
+        ILogger<OrdersController> logger,
+        ICacheService cache)
+    {
+        _orderService = orderService;
+        _logger = logger;
+        _cache = cache;
+    }
+
+    [HttpGet("{id}")]
+    public async Task<ActionResult<Order>> GetOrder(int id)
+    {
+        _logger.LogInformation("Fetching order {OrderId}", id);
+        
+        var cacheKey = $"order_{id}";
+        var cachedOrder = _cache.Get<Order>(cacheKey);
+        
+        if (cachedOrder != null)
+            return Ok(cachedOrder);
+
+        var order = await _orderService.GetOrderByIdAsync(id);
+        
+        if (order == null)
+            return NotFound();
+
+        _cache.Set(cacheKey, order, TimeSpan.FromMinutes(5));
+        return Ok(order);
+    }
+
+    [HttpPost]
+    public async Task<ActionResult<Order>> CreateOrder(CreateOrderDto dto)
+    {
+        var order = await _orderService.CreateOrderAsync(dto);
+        return CreatedAtAction(nameof(GetOrder), new { id = order.Id }, order);
+    }
+}`
+                },
+                {
+                  id: 'options-pattern',
+                  title: 'Options Pattern',
+                  code: `// appsettings.json
+{
+  "EmailSettings": {
+    "SmtpServer": "smtp.gmail.com",
+    "Port": 587,
+    "SenderEmail": "noreply@myapp.com",
+    "SenderName": "My App"
+  }
+}
+
+// Models/EmailSettings.cs
+public class EmailSettings
+{
+    public string SmtpServer { get; set; } = string.Empty;
+    public int Port { get; set; }
+    public string SenderEmail { get; set; } = string.Empty;
+    public string SenderName { get; set; } = string.Empty;
+}
+
+// Program.cs - Configure options
+builder.Services.Configure<EmailSettings>(
+    builder.Configuration.GetSection("EmailSettings"));
+
+// Services/EmailService.cs
+public class EmailService : IEmailService
+{
+    private readonly EmailSettings _settings;
+    private readonly ILogger<EmailService> _logger;
+
+    public EmailService(
+        IOptions<EmailSettings> options,
+        ILogger<EmailService> logger)
+    {
+        _settings = options.Value;
+        _logger = logger;
+    }
+
+    public async Task SendEmailAsync(string to, string subject, string body)
+    {
+        _logger.LogInformation(
+            "Sending email to {To} via {SmtpServer}:{Port}",
+            to, _settings.SmtpServer, _settings.Port);
+
+        using var client = new SmtpClient(_settings.SmtpServer, _settings.Port);
+        var message = new MailMessage(_settings.SenderEmail, to, subject, body);
+        
+        await client.SendMailAsync(message);
+    }
+}`
+                },
+                {
+                  id: 'factory-pattern',
+                  title: 'Factory Pattern',
+                  code: `// Interfaces/IPaymentProcessor.cs
+public interface IPaymentProcessor
+{
+    Task<PaymentResult> ProcessPaymentAsync(decimal amount, PaymentDetails details);
+}
+
+// Services/StripePaymentProcessor.cs
+public class StripePaymentProcessor : IPaymentProcessor
+{
+    public async Task<PaymentResult> ProcessPaymentAsync(
+        decimal amount, PaymentDetails details)
+    {
+        // Stripe-specific logic
+        return new PaymentResult { Success = true, TransactionId = "stripe_123" };
+    }
+}
+
+// Services/PayPalPaymentProcessor.cs
+public class PayPalPaymentProcessor : IPaymentProcessor
+{
+    public async Task<PaymentResult> ProcessPaymentAsync(
+        decimal amount, PaymentDetails details)
+    {
+        // PayPal-specific logic
+        return new PaymentResult { Success = true, TransactionId = "paypal_456" };
+    }
+}
+
+// Factories/PaymentProcessorFactory.cs
+public class PaymentProcessorFactory : IPaymentProcessorFactory
+{
+    private readonly IServiceProvider _serviceProvider;
+
+    public PaymentProcessorFactory(IServiceProvider serviceProvider)
+    {
+        _serviceProvider = serviceProvider;
+    }
+
+    public IPaymentProcessor Create(PaymentMethod method)
+    {
+        return method switch
+        {
+            PaymentMethod.Stripe => _serviceProvider.GetRequiredService<StripePaymentProcessor>(),
+            PaymentMethod.PayPal => _serviceProvider.GetRequiredService<PayPalPaymentProcessor>(),
+            _ => throw new ArgumentException($"Unsupported payment method: {method}")
+        };
+    }
+}
+
+// Program.cs - Register factory and processors
+builder.Services.AddScoped<StripePaymentProcessor>();
+builder.Services.AddScoped<PayPalPaymentProcessor>();
+builder.Services.AddScoped<IPaymentProcessorFactory, PaymentProcessorFactory>();`
+                },
+                {
+                  id: 'repository-pattern',
+                  title: 'Repository Pattern',
+                  code: `// Repositories/IOrderRepository.cs
+public interface IOrderRepository
+{
+    Task<Order?> GetByIdAsync(int id);
+    Task<IEnumerable<Order>> GetAllAsync();
+    Task<IEnumerable<Order>> GetByCustomerIdAsync(int customerId);
+    Task<Order> AddAsync(Order order);
+    Task UpdateAsync(Order order);
+    Task DeleteAsync(int id);
+}
+
+// Repositories/OrderRepository.cs
+public class OrderRepository : IOrderRepository
+{
+    private readonly ApplicationDbContext _context;
+
+    public OrderRepository(ApplicationDbContext context)
+    {
+        _context = context;
+    }
+
+    public async Task<Order?> GetByIdAsync(int id)
+    {
+        return await _context.Orders
+            .Include(o => o.OrderItems)
+            .ThenInclude(oi => oi.Product)
+            .FirstOrDefaultAsync(o => o.Id == id);
+    }
+
+    public async Task<IEnumerable<Order>> GetByCustomerIdAsync(int customerId)
+    {
+        return await _context.Orders
+            .Where(o => o.CustomerId == customerId)
+            .OrderByDescending(o => o.CreatedAt)
+            .ToListAsync();
+    }
+
+    public async Task<Order> AddAsync(Order order)
+    {
+        _context.Orders.Add(order);
+        await _context.SaveChangesAsync();
+        return order;
+    }
+
+    public async Task UpdateAsync(Order order)
+    {
+        _context.Orders.Update(order);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task DeleteAsync(int id)
+    {
+        var order = await _context.Orders.FindAsync(id);
+        if (order != null)
+        {
+            _context.Orders.Remove(order);
+            await _context.SaveChangesAsync();
+        }
+    }
+}`
+                },
+                {
+                  id: 'complete-example',
+                  title: 'Complete Example',
+                  code: `// Services/OrderService.cs - Combining all patterns
+public class OrderService : IOrderService
+{
+    private readonly IOrderRepository _orderRepository;
+    private readonly IPaymentProcessorFactory _paymentFactory;
+    private readonly IEmailService _emailService;
+    private readonly ILogger<OrderService> _logger;
+    private readonly OrderSettings _settings;
+
+    public OrderService(
+        IOrderRepository orderRepository,
+        IPaymentProcessorFactory paymentFactory,
+        IEmailService emailService,
+        ILogger<OrderService> logger,
+        IOptions<OrderSettings> settings)
+    {
+        _orderRepository = orderRepository;
+        _paymentFactory = paymentFactory;
+        _emailService = emailService;
+        _logger = logger;
+        _settings = settings.Value;
+    }
+
+    public async Task<OrderResult> CreateOrderAsync(CreateOrderDto dto)
+    {
+        _logger.LogInformation("Creating order for customer {CustomerId}", dto.CustomerId);
+
+        // Create order entity
+        var order = new Order
+        {
+            CustomerId = dto.CustomerId,
+            TotalAmount = dto.Items.Sum(i => i.Price * i.Quantity),
+            Status = OrderStatus.Pending,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        // Process payment using factory
+        var paymentProcessor = _paymentFactory.Create(dto.PaymentMethod);
+        var paymentResult = await paymentProcessor.ProcessPaymentAsync(
+            order.TotalAmount, 
+            dto.PaymentDetails);
+
+        if (!paymentResult.Success)
+        {
+            _logger.LogWarning("Payment failed for order");
+            return new OrderResult { Success = false, Error = "Payment failed" };
+        }
+
+        order.Status = OrderStatus.Paid;
+        order.PaymentTransactionId = paymentResult.TransactionId;
+
+        // Save using repository
+        await _orderRepository.AddAsync(order);
+
+        // Send confirmation email
+        await _emailService.SendEmailAsync(
+            dto.CustomerEmail,
+            "Order Confirmation",
+            $"Your order #{order.Id} has been confirmed!");
+
+        _logger.LogInformation("Order {OrderId} created successfully", order.Id);
+
+        return new OrderResult 
+        { 
+            Success = true, 
+            OrderId = order.Id,
+            TransactionId = paymentResult.TransactionId
+        };
+    }
+}`
+                }
+              ];
+            case 'aspnet-core-middleware-pattern':
+              return [
+                {
+                  id: 'basic-middleware',
+                  title: 'Basic Middleware',
+                  code: `// Simple inline middleware in Program.cs
+var builder = WebApplication.CreateBuilder(args);
+var app = builder.Build();
+
+// Inline middleware
+app.Use(async (context, next) =>
+{
+    // Before next middleware
+    Console.WriteLine($"Request: {context.Request.Method} {context.Request.Path}");
+    
+    await next(context);  // Call next middleware
+    
+    // After next middleware
+    Console.WriteLine($"Response: {context.Response.StatusCode}");
+});
+
+app.MapGet("/", () => "Hello World!");
+app.Run();`
+                },
+                {
+                  id: 'custom-middleware-class',
+                  title: 'Custom Middleware Class',
+                  code: `// RequestLoggingMiddleware.cs
+public class RequestLoggingMiddleware
+{
+    private readonly RequestDelegate _next;
+    private readonly ILogger<RequestLoggingMiddleware> _logger;
+
+    public RequestLoggingMiddleware(
+        RequestDelegate next, 
+        ILogger<RequestLoggingMiddleware> logger)
+    {
+        _next = next;
+        _logger = logger;
+    }
+
+    public async Task InvokeAsync(HttpContext context)
+    {
+        var startTime = DateTime.UtcNow;
+        var requestId = Guid.NewGuid().ToString();
+        
+        _logger.LogInformation(
+            "Request {RequestId}: {Method} {Path} started at {StartTime}",
+            requestId, 
+            context.Request.Method, 
+            context.Request.Path, 
+            startTime);
+
+        try
+        {
+            // Call the next middleware in the pipeline
+            await _next(context);
+        }
+        finally
+        {
+            var duration = DateTime.UtcNow - startTime;
+            _logger.LogInformation(
+                "Request {RequestId}: {Method} {Path} completed in {Duration}ms with status {StatusCode}",
+                requestId,
+                context.Request.Method,
+                context.Request.Path,
+                duration.TotalMilliseconds,
+                context.Response.StatusCode);
+        }
+    }
+}`
+                },
+                {
+                  id: 'middleware-extension',
+                  title: 'Extension Method',
+                  code: `// RequestLoggingMiddlewareExtensions.cs
+public static class RequestLoggingMiddlewareExtensions
+{
+    public static IApplicationBuilder UseRequestLogging(
+        this IApplicationBuilder builder)
+    {
+        return builder.UseMiddleware<RequestLoggingMiddleware>();
+    }
+}
+
+// Usage in Program.cs
+var builder = WebApplication.CreateBuilder(args);
+var app = builder.Build();
+
+// Now you can use it cleanly
+app.UseRequestLogging();
+
+app.MapGet("/api/users", () => new[] { "Alice", "Bob" });
+app.Run();`
+                },
+                {
+                  id: 'api-key-middleware',
+                  title: 'API Key Validation',
+                  code: `// ApiKeyMiddleware.cs
+public class ApiKeyMiddleware
+{
+    private readonly RequestDelegate _next;
+    private readonly IConfiguration _configuration;
+    private const string API_KEY_HEADER = "X-API-Key";
+
+    public ApiKeyMiddleware(
+        RequestDelegate next, 
+        IConfiguration configuration)
+    {
+        _next = next;
+        _configuration = configuration;
+    }
+
+    public async Task InvokeAsync(HttpContext context)
+    {
+        // Skip authentication for certain paths
+        if (context.Request.Path.StartsWithSegments("/health"))
+        {
+            await _next(context);
+            return;
+        }
+
+        if (!context.Request.Headers.TryGetValue(API_KEY_HEADER, out var apiKey))
+        {
+            context.Response.StatusCode = 401;
+            await context.Response.WriteAsJsonAsync(new 
+            { 
+                error = "API Key is missing" 
+            });
+            return; // Short-circuit the pipeline
+        }
+
+        var validApiKey = _configuration["ApiKey"];
+        if (apiKey != validApiKey)
+        {
+            context.Response.StatusCode = 403;
+            await context.Response.WriteAsJsonAsync(new 
+            { 
+                error = "Invalid API Key" 
+            });
+            return; // Short-circuit the pipeline
+        }
+
+        // API key is valid, continue to next middleware
+        await _next(context);
+    }
+}
+
+// Extension method
+public static class ApiKeyMiddlewareExtensions
+{
+    public static IApplicationBuilder UseApiKeyAuth(
+        this IApplicationBuilder builder)
+    {
+        return builder.UseMiddleware<ApiKeyMiddleware>();
+    }
+}`
+                },
+                {
+                  id: 'complete-pipeline',
+                  title: 'Complete Pipeline',
+                  code: `// Program.cs - Complete middleware pipeline
+var builder = WebApplication.CreateBuilder(args);
+
+// Add services
+builder.Services.AddControllers();
+
+var app = builder.Build();
+
+// Configure middleware pipeline (order matters!)
+
+// 1. Exception handling (should be first)
+app.UseExceptionHandler("/error");
+
+// 2. HTTPS redirection
+app.UseHttpsRedirection();
+
+// 3. Static files
+app.UseStaticFiles();
+
+// 4. Routing
+app.UseRouting();
+
+// 5. CORS (if needed)
+app.UseCors();
+
+// 6. Custom request logging
+app.UseRequestLogging();
+
+// 7. Custom API key authentication
+app.UseApiKeyAuth();
+
+// 8. Built-in authentication
+app.UseAuthentication();
+
+// 9. Built-in authorization
+app.UseAuthorization();
+
+// 10. Endpoint mapping
+app.MapControllers();
+app.MapGet("/", () => "API is running");
+app.MapGet("/health", () => Results.Ok(new { status = "healthy" }));
+
+app.Run();`
+                }
+              ];
             case 'strategy-pattern-design-pattern':
               return [
                 {
