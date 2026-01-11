@@ -5,7 +5,7 @@ export const dependencyInversionPost: BlogPost = {
   title: "Dependency Inversion Principle: The 'D' in SOLID",
   excerpt: "Learn how the Dependency Inversion Principle helps create loosely coupled, testable, and maintainable code by depending on abstractions instead of concrete implementations.",
   date: "January 11, 2026",
-  author: "Matthew Holmes",
+  author: "nemostorm",
   readTime: "10 min read",
   category: "Design Patterns",
   content: `

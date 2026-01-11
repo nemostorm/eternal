@@ -5,7 +5,7 @@ export const aspNetCoreMiddlewarePost: BlogPost = {
   title: "Middleware Pattern in ASP.NET Core: Building a Request Pipeline",
   excerpt: "Explore how ASP.NET Core's middleware pattern creates a powerful request processing pipeline, enabling modular, reusable components for authentication, logging, and more.",
   date: "January 11, 2026",
-  author: "Matthew Holmes",
+  author: "nemostorm",
   readTime: "13 min read",
   category: "Design Patterns",
   content: `

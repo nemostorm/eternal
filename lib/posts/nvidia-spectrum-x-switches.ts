@@ -5,7 +5,7 @@ export const nvidiaSpectrumXPost: BlogPost = {
   title: "NVIDIA Spectrum-X: Revolutionizing AI Data Center Networking",
   excerpt: "Exploring NVIDIA's latest Ethernet networking platform designed specifically for AI workloads, delivering unprecedented performance for GPU clusters.",
   date: "January 10, 2026",
-  author: "Matthew Holmes",
+  author: "nemostorm",
   readTime: "8 min read",
   category: "Hardware & Infrastructure",
   content: `

@@ -20,7 +20,7 @@ export function BlogCard({ slug, title, excerpt, date, author, readTime, categor
           <div className="p-4">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs text-purple-400 uppercase tracking-wider">{category}</span>
-              <span className="text-xs text-gray-500">{readTime}</span>
+              <span className="text-xs text-gray-500 font-mono">{readTime}</span>
             </div>
 
             <h2 className="text-lg font-light text-white mb-2">
@@ -32,8 +32,8 @@ export function BlogCard({ slug, title, excerpt, date, author, readTime, categor
             </p>
 
             <div className="flex items-center justify-between text-xs text-gray-500">
-              <span>{author}</span>
-              <span>{date}</span>
+              <span className="font-mono">{author}</span>
+              <span className="font-mono">{date}</span>
             </div>
           </div>
         </article>

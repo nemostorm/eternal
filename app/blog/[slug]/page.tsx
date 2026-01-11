@@ -1449,11 +1449,11 @@ public class OverlyComplexSingleton
               <span className="text-xs text-purple-400 uppercase tracking-wider">{post.category}</span>
               <h1 className="text-5xl font-light text-white mt-4 mb-4">{post.title}</h1>
               <div className="flex items-center gap-4 text-sm text-gray-400">
-                <span>{post.author}</span>
+                <span className="font-mono">{post.author}</span>
                 <span>•</span>
-                <span>{post.date}</span>
+                <span className="font-mono">{post.date}</span>
                 <span>•</span>
-                <span>{post.readTime}</span>
+                <span className="font-mono">{post.readTime}</span>
               </div>
             </div>
 

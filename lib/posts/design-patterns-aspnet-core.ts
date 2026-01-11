@@ -5,7 +5,7 @@ export const designPatternsAspNetCorePost: BlogPost = {
   title: "Essential Design Patterns for ASP.NET Core Applications",
   excerpt: "Master the most important design patterns used in modern ASP.NET Core applications, from dependency injection to options pattern, with practical examples and best practices.",
   date: "January 11, 2026",
-  author: "Matthew Holmes",
+  author: "nemostorm",
   readTime: "15 min read",
   category: "Design Patterns",
   content: `

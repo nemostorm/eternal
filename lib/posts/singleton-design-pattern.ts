@@ -5,7 +5,7 @@ export const singletonPatternPost: BlogPost = {
   title: "The Singleton Pattern: Ensuring Single Instance Control",
   excerpt: "Learn how the Singleton Pattern guarantees that a class has only one instance while providing global access to that instance.",
   date: "January 11, 2026",
-  author: "Matthew Holmes",
+  author: "nemostorm",
   readTime: "10 min read",
   category: "Design Patterns",
   content: `

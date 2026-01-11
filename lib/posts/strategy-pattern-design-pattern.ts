@@ -5,7 +5,7 @@ export const strategyPatternPost: BlogPost = {
   title: "The Strategy Pattern: A Design Pattern for Flexible Algorithms",
   excerpt: "Learn how the Strategy Pattern enables you to define a family of algorithms, encapsulate each one, and make them interchangeable at runtime.",
   date: "January 11, 2026",
-  author: "Matthew Holmes",
+  author: "nemostorm",
   readTime: "12 min read",
   category: "Design Patterns",
   content: `

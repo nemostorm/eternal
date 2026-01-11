@@ -5,7 +5,7 @@ export const repositoryPatternPost: BlogPost = {
   title: "The Repository Pattern: Abstracting Data Access Logic",
   excerpt: "Discover how the Repository Pattern provides a clean separation between your business logic and data access layer, making your code more maintainable and testable.",
   date: "January 11, 2026",
-  author: "Matthew Holmes",
+  author: "nemostorm",
   readTime: "11 min read",
   category: "Design Patterns",
   content: `
