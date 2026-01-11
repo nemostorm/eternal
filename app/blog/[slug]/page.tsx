@@ -103,6 +103,8 @@ export default function BlogPostPage() {
           return `<li class="ml-4"><strong class="text-white">${match[1]}</strong>: ${convertMarkdown(match[2])}</li>`;
         }
         return `<li class="ml-4">${convertMarkdown(line.substring(2))}</li>`;
+      } else if (line.startsWith('- ')) {
+        return `<li class="ml-4 list-disc">${convertMarkdown(line.substring(2))}</li>`;
       } else if (line.startsWith('✅ **')) {
         return `<p class="text-green-400">${convertMarkdown(line.replace('✅ ', ''))}</p>`;
       } else if (line.startsWith('❌ **')) {
@@ -138,12 +140,16 @@ export default function BlogPostPage() {
   return (
     <div className="min-h-screen bg-black flex flex-col relative overflow-hidden">
       {/* Left side SVG pattern */}
-      <div className="hidden lg:block absolute left-0 top-0 bottom-0 w-32 opacity-10 pointer-events-none">
+      <div className="hidden lg:block absolute left-0 top-0 bottom-0 w-48 opacity-30 pointer-events-none z-0">
         <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
           <defs>
-            <pattern id="left-pattern" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
-              <circle cx="20" cy="20" r="1.5" fill="#a855f7" />
-              <path d="M0 20 L40 20 M20 0 L20 40" stroke="#a855f7" strokeWidth="0.5" opacity="0.3" />
+            <pattern id="left-pattern" x="0" y="0" width="60" height="60" patternUnits="userSpaceOnUse">
+              <circle cx="30" cy="30" r="2" fill="#a855f7" />
+              <circle cx="0" cy="0" r="1" fill="#a855f7" opacity="0.5" />
+              <circle cx="60" cy="0" r="1" fill="#a855f7" opacity="0.5" />
+              <circle cx="0" cy="60" r="1" fill="#a855f7" opacity="0.5" />
+              <path d="M30 0 L30 60" stroke="#a855f7" strokeWidth="0.5" opacity="0.2" />
+              <path d="M0 30 L60 30" stroke="#a855f7" strokeWidth="0.5" opacity="0.2" />
             </pattern>
           </defs>
           <rect width="100%" height="100%" fill="url(#left-pattern)" />
@@ -151,12 +157,16 @@ export default function BlogPostPage() {
       </div>
 
       {/* Right side SVG pattern */}
-      <div className="hidden lg:block absolute right-0 top-0 bottom-0 w-32 opacity-10 pointer-events-none">
+      <div className="hidden lg:block absolute right-0 top-0 bottom-0 w-48 opacity-30 pointer-events-none z-0">
         <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
           <defs>
-            <pattern id="right-pattern" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
-              <circle cx="20" cy="20" r="1.5" fill="#a855f7" />
-              <path d="M0 20 L40 20 M20 0 L20 40" stroke="#a855f7" strokeWidth="0.5" opacity="0.3" />
+            <pattern id="right-pattern" x="0" y="0" width="60" height="60" patternUnits="userSpaceOnUse">
+              <circle cx="30" cy="30" r="2" fill="#a855f7" />
+              <circle cx="0" cy="0" r="1" fill="#a855f7" opacity="0.5" />
+              <circle cx="60" cy="0" r="1" fill="#a855f7" opacity="0.5" />
+              <circle cx="0" cy="60" r="1" fill="#a855f7" opacity="0.5" />
+              <path d="M30 0 L30 60" stroke="#a855f7" strokeWidth="0.5" opacity="0.2" />
+              <path d="M0 30 L60 30" stroke="#a855f7" strokeWidth="0.5" opacity="0.2" />
             </pattern>
           </defs>
           <rect width="100%" height="100%" fill="url(#right-pattern)" />
@@ -164,7 +174,7 @@ export default function BlogPostPage() {
       </div>
 
       <Navbar />
-      <main className="flex-1 container mx-auto px-4 py-20 max-w-4xl relative z-10">
+      <main className="flex-1 container mx-auto px-4 py-20 max-w-4xl relative z-1">
         <Link href="/blog" className="text-purple-400 hover:text-purple-300 mb-8 inline-block">
           ← Back to Blog
         </Link>

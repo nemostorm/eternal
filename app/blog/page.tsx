@@ -21,9 +21,43 @@ export default function Blog() {
   }, [searchTerm]);
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col relative overflow-hidden bg-black">
+      {/* Left side SVG pattern */}
+      <div className="hidden lg:block absolute left-0 top-0 bottom-0 w-48 opacity-30 pointer-events-none z-0">
+        <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <pattern id="left-pattern" x="0" y="0" width="60" height="60" patternUnits="userSpaceOnUse">
+              <circle cx="30" cy="30" r="2" fill="#a855f7" />
+              <circle cx="0" cy="0" r="1" fill="#a855f7" opacity="0.5" />
+              <circle cx="60" cy="0" r="1" fill="#a855f7" opacity="0.5" />
+              <circle cx="0" cy="60" r="1" fill="#a855f7" opacity="0.5" />
+              <path d="M30 0 L30 60" stroke="#a855f7" strokeWidth="0.5" opacity="0.2" />
+              <path d="M0 30 L60 30" stroke="#a855f7" strokeWidth="0.5" opacity="0.2" />
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#left-pattern)" />
+        </svg>
+      </div>
+
+      {/* Right side SVG pattern */}
+      <div className="hidden lg:block absolute right-0 top-0 bottom-0 w-48 opacity-30 pointer-events-none z-0">
+        <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <pattern id="right-pattern" x="0" y="0" width="60" height="60" patternUnits="userSpaceOnUse">
+              <circle cx="30" cy="30" r="2" fill="#a855f7" />
+              <circle cx="0" cy="0" r="1" fill="#a855f7" opacity="0.5" />
+              <circle cx="60" cy="0" r="1" fill="#a855f7" opacity="0.5" />
+              <circle cx="0" cy="60" r="1" fill="#a855f7" opacity="0.5" />
+              <path d="M30 0 L30 60" stroke="#a855f7" strokeWidth="0.5" opacity="0.2" />
+              <path d="M0 30 L60 30" stroke="#a855f7" strokeWidth="0.5" opacity="0.2" />
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#right-pattern)" />
+        </svg>
+      </div>
+
       <Navbar />
-      <main className="flex-1 bg-black pt-16">
+      <main className="flex-1 pt-16 relative z-1">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <h1 className="text-4xl font-light text-white mb-8 tracking-wider">Tech Blog</h1>
           <p className="text-lg text-gray-400 mb-12">
