@@ -514,6 +514,5 @@ When combined with the other SOLID principles, DIP helps you build robust, profe
 
 ---
 
-*How do you implement dependency inversion in your projects? Share your experiences with DI containers and testing strategies!*
   `
 };

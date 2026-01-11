@@ -80,7 +80,7 @@ export default function Blog() {
             {/* Fade gradient overlay at top */}
             <div className="absolute top-0 left-0 right-0 h-16 bg-gradient-to-b from-black to-transparent pointer-events-none z-10"></div>
             
-            <div className="max-h-96 overflow-y-auto scrollbar-thin scrollbar-thumb-purple-600/30">
+            <div className="max-h-[32rem] overflow-y-auto scrollbar-thin scrollbar-thumb-purple-600/30">
               <div className="space-y-6 pr-4">
                 {filteredPosts.map((post, index) => (
                   <BlogCard

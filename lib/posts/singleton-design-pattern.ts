@@ -490,6 +490,5 @@ Remember: the goal is not to avoid Singletons entirely, but to use them thoughtf
 
 ---
 
-*Do you use Singletons in your projects? What alternatives have you found effective? Share your thoughts in the comments below!*
   `
 };

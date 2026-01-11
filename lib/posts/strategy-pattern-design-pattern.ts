@@ -355,6 +355,5 @@ Remember: favor composition over inheritance, and always keep your code open for
 
 ---
 
-*What design patterns do you use most often? Share your experiences in the comments below!*
   `
 };
