@@ -136,9 +136,35 @@ export default function BlogPostPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black flex flex-col">
+    <div className="min-h-screen bg-black flex flex-col relative overflow-hidden">
+      {/* Left side SVG pattern */}
+      <div className="hidden lg:block absolute left-0 top-0 bottom-0 w-32 opacity-10 pointer-events-none">
+        <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <pattern id="left-pattern" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
+              <circle cx="20" cy="20" r="1.5" fill="#a855f7" />
+              <path d="M0 20 L40 20 M20 0 L20 40" stroke="#a855f7" strokeWidth="0.5" opacity="0.3" />
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#left-pattern)" />
+        </svg>
+      </div>
+
+      {/* Right side SVG pattern */}
+      <div className="hidden lg:block absolute right-0 top-0 bottom-0 w-32 opacity-10 pointer-events-none">
+        <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <pattern id="right-pattern" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
+              <circle cx="20" cy="20" r="1.5" fill="#a855f7" />
+              <path d="M0 20 L40 20 M20 0 L20 40" stroke="#a855f7" strokeWidth="0.5" opacity="0.3" />
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#right-pattern)" />
+        </svg>
+      </div>
+
       <Navbar />
-      <main className="flex-1 container mx-auto px-4 py-20 max-w-4xl">
+      <main className="flex-1 container mx-auto px-4 py-20 max-w-4xl relative z-10">
         <Link href="/blog" className="text-purple-400 hover:text-purple-300 mb-8 inline-block">
           ← Back to Blog
         </Link>
