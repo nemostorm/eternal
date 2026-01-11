@@ -27,7 +27,7 @@ export default function Blog() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <h1 className="text-4xl font-light text-white mb-8 tracking-wider">Tech Blog</h1>
           <p className="text-lg text-gray-400 mb-12">
-            Deep dives into cutting-edge technology, programming, AI, and software development.
+            Ideas, insights, and explorations across the digital landscape.
           </p>
 
           {/* Search Bar */}
