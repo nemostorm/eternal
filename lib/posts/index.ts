@@ -8,12 +8,14 @@ import { designPatternsAspNetCorePost } from './design-patterns-aspnet-core';
 import { csharpDotnetBackendPost } from './csharp-dotnet-backend-development';
 import { rabbitMqDotnetPost } from './rabbitmq-dotnet-message-queues';
 import { linuxPipingStreamsPost } from './linux-piping-streams';
+import { algorithmsWhenToUsePost } from './algorithms-when-to-use';
 import { BlogPost } from './types';
 
 export const blogPosts: BlogPost[] = [
   rabbitMqDotnetPost,
   csharpDotnetBackendPost,
   linuxPipingStreamsPost,
+  algorithmsWhenToUsePost,
   designPatternsAspNetCorePost,
   aspNetCoreMiddlewarePost,
   dependencyInversionPost,
