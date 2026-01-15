@@ -19,8 +19,6 @@ The Strategy Pattern is a behavioral design pattern that enables selecting an al
 
 Imagine you're building a payment processing system. You need to support multiple payment methods: credit card, PayPal, cryptocurrency, and bank transfer. Without the Strategy Pattern, you might end up with code like this:
 
-[INTERACTIVE_CODE_EDITOR]
-
 ## Conclusion
 
 The Strategy Pattern is a powerful tool for writing flexible, maintainable code. By encapsulating algorithms into separate classes, you create a system that's easy to extend, test, and modify. Whether you're processing payments, sorting data, or validating input, the Strategy Pattern helps you build robust applications that can adapt to changing requirements.

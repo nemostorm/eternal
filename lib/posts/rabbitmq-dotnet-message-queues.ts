@@ -164,7 +164,6 @@ MassTransit handles retries, middleware, and sagas out of the box which reduces 
 
 RabbitMQ is a powerful tool for building resilient distributed systems. In .NET, you can start with the official client for complete control or use MassTransit for productivity and advanced patterns. Pay attention to durability, acknowledgements, prefetch, and idempotency to build reliable message-driven systems.
 
-[INTERACTIVE_CODE_EDITOR]
 `
 };
 

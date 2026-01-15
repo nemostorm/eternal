@@ -147,7 +147,6 @@ This makes scripts safer by detecting failures from any stage.
 
 Mastering streams, pipes, and redirection unlocks the composability that makes Unix tooling so powerful. Start with simple pipelines, learn the edge cases (buffering, quoting, error handling), and gradually incorporate tools like \`tee\`, \`xargs\`, and \`pv\` to build robust data-processing flows.
 
-[INTERACTIVE_CODE_EDITOR]
 `
 };
 

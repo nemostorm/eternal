@@ -34,8 +34,6 @@ The response then flows back through the pipeline in reverse order, allowing eac
 
 ## Building Custom Middleware
 
-[INTERACTIVE_CODE_EDITOR]
-
 ## How the Pipeline Works
 
 The middleware pipeline executes in the order you register components in Program.cs:

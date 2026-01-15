@@ -27,8 +27,6 @@ Without the Singleton Pattern, you might accidentally create multiple instances,
 
 ## Implementation Approaches
 
-[INTERACTIVE_CODE_EDITOR]
-
 ## Benefits of the Singleton Pattern
 
 - **Single Instance Guarantee**: Ensures only one instance exists throughout the application

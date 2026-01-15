@@ -23,8 +23,6 @@ In simpler terms: *Depend on interfaces or abstract classes, not concrete implem
 
 Consider an e-commerce application that needs to send notifications:
 
-[INTERACTIVE_CODE_EDITOR]
-
 ## The Solution: Dependency Inversion
 
 The interactive code editor above demonstrates the proper implementation of the Dependency Inversion Principle:

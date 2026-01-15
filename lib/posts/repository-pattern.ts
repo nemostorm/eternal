@@ -19,8 +19,6 @@ The Repository Pattern is a design pattern that mediates between the domain and 
 
 Imagine you're building an e-commerce application. Without the Repository Pattern, your business logic might be tightly coupled to your database:
 
-[INTERACTIVE_CODE_EDITOR]
-
 ## The Solution: Repository Pattern
 
 The interactive code editor above demonstrates the Repository Pattern implementation:

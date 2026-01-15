@@ -91,7 +91,6 @@ Always benchmark with real-ish data. Algorithmic complexity is a guide, but cons
 
 Algorithm selection balances theoretical complexity, input characteristics, and engineering trade-offs. Start with the simplest correct approach, profile, then iterate to a more specialized algorithm if needed.
 
-[INTERACTIVE_CODE_EDITOR]
 `
 };
 

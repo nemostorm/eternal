@@ -313,6 +313,5 @@ Mastering these concepts will make you a proficient .NET backend developer. Focu
 
 Remember: The best code is not necessarily the most complex, but the most readable and maintainable. Keep learning, stay curious, and always strive to improve your craft.
 
-[INTERACTIVE_CODE_EDITOR]
 `
 };

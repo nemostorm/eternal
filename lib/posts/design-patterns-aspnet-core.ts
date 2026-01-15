@@ -252,5 +252,7 @@ Together, these patterns create applications that are:
 - **Scalable**: Can grow without architectural debt
 
 Start implementing these patterns in your next ASP.NET Core project. The initial investment pays dividends in application quality and developer productivity.
-  `
-};
+        }
+    }
+}
+```
