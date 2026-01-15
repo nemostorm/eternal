@@ -6,9 +6,11 @@ import { dependencyInversionPost } from './dependency-inversion-principle';
 import { aspNetCoreMiddlewarePost } from './aspnet-core-middleware-pattern';
 import { designPatternsAspNetCorePost } from './design-patterns-aspnet-core';
 import { csharpDotnetBackendPost } from './csharp-dotnet-backend-development';
+import { rabbitMqDotnetPost } from './rabbitmq-dotnet-message-queues';
 import { BlogPost } from './types';
 
 export const blogPosts: BlogPost[] = [
+  rabbitMqDotnetPost,
   csharpDotnetBackendPost,
   designPatternsAspNetCorePost,
   aspNetCoreMiddlewarePost,
