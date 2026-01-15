@@ -4,7 +4,6 @@ import { repositoryPatternPost } from './repository-pattern';
 import { nvidiaSpectrumXPost } from './nvidia-spectrum-x-switches';
 import { dependencyInversionPost } from './dependency-inversion-principle';
 import { aspNetCoreMiddlewarePost } from './aspnet-core-middleware-pattern';
-import { designPatternsAspNetCorePost } from './design-patterns-aspnet-core';
 import { csharpDotnetBackendPost } from './csharp-dotnet-backend-development';
 import { rabbitMqDotnetPost } from './rabbitmq-dotnet-message-queues';
 import { linuxPipingStreamsPost } from './linux-piping-streams';
@@ -16,7 +15,6 @@ export const blogPosts: BlogPost[] = [
   csharpDotnetBackendPost,
   linuxPipingStreamsPost,
   algorithmsWhenToUsePost,
-  designPatternsAspNetCorePost,
   aspNetCoreMiddlewarePost,
   dependencyInversionPost,
   strategyPatternPost,
